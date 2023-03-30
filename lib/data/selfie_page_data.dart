@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
@@ -6,18 +7,22 @@ import 'package:geolocator/geolocator.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:screenshot/screenshot.dart';
 
+import '../service/dio_service.dart';
 import '../service/position_service.dart';
 
 class SelfiePageData with ChangeNotifier {
   final _picker = ImagePicker();
   XFile? _image;
   XFile? get image => _image;
+  Uint8List? _imageScreenshot;
+  Uint8List? get imageScreenshot => _imageScreenshot;
   Position? _position;
   final _deviceInfo = DeviceInfoPlugin();
-  var _latlng = "";
+  var _latlng = "error getting latlng";
   String get latlng => _latlng;
-  var _address = "";
+  var _address = "error getting address";
   String get address => _address;
   var _heading = "";
   String get heading => _heading;
@@ -33,11 +38,15 @@ class SelfiePageData with ChangeNotifier {
   String get dateTimeDisplay => _dateTimeDisplay;
   final _errorList = <String>[];
   List<String> get errorList => _errorList;
+  //Create an instance of ScreenshotController
+  final screenshotController = ScreenshotController();
 
   // get image
-  void getImage() async {
+  Future<void> getImage() async {
     try {
-      await _picker.pickImage(source: ImageSource.camera).then((XFile? result) {
+      await _picker
+          .pickImage(source: ImageSource.camera, imageQuality: 40)
+          .then((XFile? result) {
         _image = result;
         notifyListeners();
       });
@@ -47,6 +56,18 @@ class SelfiePageData with ChangeNotifier {
       _timestamp = DateFormat('yyyy-MM-dd - HH:mm:ss').format(DateTime.now());
       _dateTimeDisplay = DateFormat.yMEd().add_jms().format(DateTime.now());
     }
+  }
+
+  Future<void> captureImage() async {
+    screenshotController
+        .capture(delay: const Duration(seconds: 3))
+        .then((Uint8List? result) {
+      debugPrint(result.toString());
+      _imageScreenshot = result;
+      notifyListeners();
+    }).catchError((Object err) {
+      debugPrint(err.toString());
+    });
   }
 
   void printData() {
@@ -104,6 +125,14 @@ class SelfiePageData with ChangeNotifier {
     } catch (e) {
       debugPrint('$e');
       _errorList.add('initTranslateLatLng $e');
+    }
+  }
+
+  Future<void> uploadImage() async {
+    try {
+      DioService.uploadImage(_imageScreenshot!);
+    } catch (e) {
+      debugPrint('$e');
     }
   }
 }
