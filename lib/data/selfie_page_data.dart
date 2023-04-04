@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 
@@ -9,7 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
 
-import '../service/dio_service.dart';
+import '../service/http_service.dart';
 import '../service/position_service.dart';
 
 class SelfiePageData with ChangeNotifier {
@@ -36,16 +37,22 @@ class SelfiePageData with ChangeNotifier {
   var _timestamp = "00:00:00";
   var _dateTimeDisplay = "00:00:00";
   String get dateTimeDisplay => _dateTimeDisplay;
+  var _isLoading = false;
+  bool get isLoading => _isLoading;
   final _errorList = <String>[];
   List<String> get errorList => _errorList;
   //Create an instance of ScreenshotController
   final screenshotController = ScreenshotController();
 
+  void changeLoading() {
+    _isLoading = !_isLoading;
+  }
+
   // get image
   Future<void> getImage() async {
     try {
       await _picker
-          .pickImage(source: ImageSource.camera, imageQuality: 40)
+          .pickImage(source: ImageSource.camera, imageQuality: 80)
           .then((XFile? result) {
         _image = result;
         notifyListeners();
@@ -55,11 +62,12 @@ class SelfiePageData with ChangeNotifier {
     } finally {
       _timestamp = DateFormat('yyyy-MM-dd - HH:mm:ss').format(DateTime.now());
       _dateTimeDisplay = DateFormat.yMEd().add_jms().format(DateTime.now());
+      changeLoading();
     }
   }
 
   Future<void> captureImage() async {
-    screenshotController
+    await screenshotController
         .capture(delay: const Duration(seconds: 3))
         .then((Uint8List? result) {
       debugPrint(result.toString());
@@ -68,6 +76,7 @@ class SelfiePageData with ChangeNotifier {
     }).catchError((Object err) {
       debugPrint(err.toString());
     });
+    changeLoading();
   }
 
   void printData() {
@@ -130,7 +139,9 @@ class SelfiePageData with ChangeNotifier {
 
   Future<void> uploadImage() async {
     try {
-      DioService.uploadImage(_imageScreenshot!);
+      String base64 = base64Encode(_imageScreenshot!);
+      debugPrint(base64);
+      HttpService.uploadImage(base64, _image!.name);
     } catch (e) {
       debugPrint('$e');
     }
