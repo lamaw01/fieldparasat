@@ -7,15 +7,23 @@ $inputJSON = file_get_contents('php://input');
 $input = json_decode($inputJSON, TRUE);
 
 if($_SERVER['REQUEST_METHOD'] == 'POST' && array_key_exists('image', $input)){
-    $image = $input['image'];
     $name = $input['name'];
+    $employee_id = $input['employee_id'];
+    $latlng = $input['latlng'];
+    $address = $input['address'];
+    $image_name = $input['image_name'];
+    $image = $input['image'];
 
     // query insert image
-    $sql_insert_image = 'INSERT INTO tbl_image(name, image)
-    VALUES (:name,:image)';
+    $sql_insert_image = 'INSERT INTO tbl_selfie_logs(name, employee_id, latlng, address, image_name, image)
+    VALUES (:name,:employee_id,:latlng,:address,:image_name,:image)';
     try {
         $insert_image = $conn->prepare($sql_insert_image);
         $insert_image->bindParam(':name', $name, PDO::PARAM_STR);
+        $insert_image->bindParam(':employee_id', $employee_id, PDO::PARAM_STR);
+        $insert_image->bindParam(':latlng', $latlng, PDO::PARAM_STR);
+        $insert_image->bindParam(':address', $address, PDO::PARAM_STR);
+        $insert_image->bindParam(':image_name', $image_name, PDO::PARAM_STR);
         $insert_image->bindParam(':image', $image, PDO::PARAM_STR);
         $insert_image->execute();
         echo json_encode(array('success'=>true,'message'=>'Ok'));

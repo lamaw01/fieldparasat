@@ -5,7 +5,7 @@ header("Content-type: image/jpeg");
 $id = $_GET['id'];
 
 // query select image
-$sql_insert_image = 'SELECT * from tbl_image
+$sql_insert_image = 'SELECT * from tbl_selfie_logs
 WHERE id = :id';
 
 try {

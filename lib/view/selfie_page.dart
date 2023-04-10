@@ -1,8 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
@@ -21,10 +23,22 @@ class SelfiePage extends StatefulWidget {
 class _SelfiePageState extends State<SelfiePage> {
   final nameController = TextEditingController();
   final idController = TextEditingController();
+  StreamSubscription<InternetConnectionStatus>? listener;
+  bool hasInternet = false;
 
   @override
   void initState() {
     super.initState();
+    listener = InternetConnectionChecker().onStatusChange.listen((status) {
+      switch (status) {
+        case InternetConnectionStatus.connected:
+          hasInternet = true;
+          break;
+        case InternetConnectionStatus.disconnected:
+          hasInternet = false;
+          break;
+      }
+    });
   }
 
   @override
@@ -32,6 +46,7 @@ class _SelfiePageState extends State<SelfiePage> {
     super.dispose();
     nameController.dispose();
     idController.dispose();
+    listener!.cancel();
   }
 
   Future<void> _showMyDialog(Uint8List image) async {
@@ -44,7 +59,6 @@ class _SelfiePageState extends State<SelfiePage> {
           contentPadding: const EdgeInsetsDirectional.symmetric(
               vertical: 12.0, horizontal: 8.0),
           title: const Text('Employee Info'),
-          // content: Image.memory(image),
           content: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
@@ -54,7 +68,7 @@ class _SelfiePageState extends State<SelfiePage> {
                 controller: nameController,
                 autofocus: true,
                 keyboardType: TextInputType.text,
-                textInputAction: TextInputAction.next,
+                textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(
                   focusColor: Colors.white,
                   hintText: 'Name..',
@@ -65,9 +79,7 @@ class _SelfiePageState extends State<SelfiePage> {
                 },
               ),
               TextField(
-                textCapitalization: TextCapitalization.words,
                 controller: idController,
-                autofocus: true,
                 keyboardType: TextInputType.number,
                 textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(
@@ -84,13 +96,30 @@ class _SelfiePageState extends State<SelfiePage> {
           actions: <Widget>[
             TextButton(
               child: const Text('Ok'),
-              onPressed: () {
+              onPressed: () async {
                 if (nameController.text.isEmpty || idController.text.isEmpty) {
                   _showMyToast('Missing Fields..');
                 } else {
-                  Navigator.of(context).pop();
+                  await instance
+                      .uploadImage(
+                    nameController.text.trim(),
+                    idController.text.trim(),
+                  )
+                      .then((result) {
+                    nameController.clear();
+                    idController.clear();
+                    Navigator.of(context).pop();
+                    if (result) {
+                      _showMyToast('Successfully log');
+                    } else {
+                      if (hasInternet) {
+                        _showMyToast('Error uploading log');
+                      } else {
+                        _showMyToast('Not connected to internet');
+                      }
+                    }
+                  });
                 }
-                instance.uploadImage();
               },
             ),
           ],
@@ -139,20 +168,46 @@ class _SelfiePageState extends State<SelfiePage> {
     );
   }
 
+  void _showErrorLogsDialog(List<String> list) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error logs'),
+          content: ListView.builder(
+            itemCount: list.length,
+            itemBuilder: (ctx, i) {
+              return Text(list[i]);
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     var instance = Provider.of<SelfiePageData>(context);
     var size = MediaQuery.of(context).size;
-    if (instance.image == null) {
+    if (instance.image == null && instance.imageScreenshot == null) {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Parasat Selfie DTR'),
         ),
         body: const Center(
           child: Text(
-            'No Image',
+            'No Image.',
             style: TextStyle(
-              fontSize: 16.0,
+              fontSize: 17.0,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -162,21 +217,24 @@ class _SelfiePageState extends State<SelfiePage> {
     } else {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Parasat Selfie DTR'),
+          title: GestureDetector(
+            child: const Text('Parasat Selfie DTR'),
+            onDoubleTap: () {
+              _showErrorLogsDialog(instance.errorList);
+            },
+          ),
           actions: [
-            TextButton(
-              onPressed: () async {
-                debugPrint('send');
-                if (instance.imageScreenshot == null) {
-                  await instance.captureImage();
-                }
-                _showMyDialog(instance.imageScreenshot!);
-              },
-              child: const Text(
-                'Send',
-                style: TextStyle(color: Colors.white),
+            if (instance.imageScreenshot != null) ...[
+              TextButton(
+                onPressed: () {
+                  _showMyDialog(instance.imageScreenshot!);
+                },
+                child: const Text(
+                  'Send',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
-            ),
+            ],
           ],
         ),
         body: Screenshot(
@@ -204,35 +262,35 @@ class _SelfiePageState extends State<SelfiePage> {
                     Text(
                       "Speed: ${instance.speed}",
                       style: const TextStyle(
-                        fontSize: 16.0,
+                        fontSize: 17.0,
                         color: Colors.white,
                       ),
                     ),
                     Text(
                       "Altitude: ${instance.altitude}m",
                       style: const TextStyle(
-                        fontSize: 16.0,
+                        fontSize: 17.0,
                         color: Colors.white,
                       ),
                     ),
                     Text(
                       "Heading ${instance.heading}°",
                       style: const TextStyle(
-                        fontSize: 16.0,
+                        fontSize: 17.0,
                         color: Colors.white,
                       ),
                     ),
                     Text(
                       instance.dateTimeDisplay,
                       style: const TextStyle(
-                        fontSize: 16.0,
+                        fontSize: 17.0,
                         color: Colors.white,
                       ),
                     ),
                     Text(
                       instance.latlng,
                       style: const TextStyle(
-                        fontSize: 16.0,
+                        fontSize: 17.0,
                         color: Colors.white,
                       ),
                     ),
@@ -244,7 +302,7 @@ class _SelfiePageState extends State<SelfiePage> {
                         textAlign: TextAlign.end,
                         maxLines: 2,
                         style: const TextStyle(
-                          fontSize: 16.0,
+                          fontSize: 17.0,
                           color: Colors.white,
                           overflow: TextOverflow.ellipsis,
                         ),

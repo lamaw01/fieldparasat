@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
 
+import '../model/selfie_model.dart';
 import '../service/http_service.dart';
 import '../service/position_service.dart';
 
@@ -33,22 +34,17 @@ class SelfiePageData with ChangeNotifier {
   String get deviceId => _deviceId;
   var _speed = "";
   String get speed => _speed;
-  // ignore: unused_field
   var _timestamp = "00:00:00";
   var _dateTimeDisplay = "00:00:00";
   String get dateTimeDisplay => _dateTimeDisplay;
-  var _isLoading = false;
-  bool get isLoading => _isLoading;
   final _errorList = <String>[];
   List<String> get errorList => _errorList;
   //Create an instance of ScreenshotController
   final screenshotController = ScreenshotController();
+  SelfieModel? _response;
+  SelfieModel? get response => _response;
 
-  void changeLoading() {
-    _isLoading = !_isLoading;
-  }
-
-  // get image
+  // get imageuploadImage
   Future<void> getImage() async {
     try {
       await _picker
@@ -60,9 +56,8 @@ class SelfiePageData with ChangeNotifier {
     } catch (e) {
       debugPrint('getImage $e');
     } finally {
-      _timestamp = DateFormat('yyyy-MM-dd - HH:mm:ss').format(DateTime.now());
+      _timestamp = DateFormat('yyyy-MM-dd-HH:mm:ss').format(DateTime.now());
       _dateTimeDisplay = DateFormat.yMEd().add_jms().format(DateTime.now());
-      changeLoading();
     }
   }
 
@@ -72,11 +67,10 @@ class SelfiePageData with ChangeNotifier {
         .then((Uint8List? result) {
       debugPrint(result.toString());
       _imageScreenshot = result;
-      notifyListeners();
     }).catchError((Object err) {
       debugPrint(err.toString());
     });
-    changeLoading();
+    notifyListeners();
   }
 
   void printData() {
@@ -112,7 +106,7 @@ class SelfiePageData with ChangeNotifier {
         _latlng = "${result.latitude} ${result.longitude}";
         _speed = result.speed.toString();
         _heading = result.heading.toString();
-        _altitude = result.altitude.toString();
+        _altitude = result.altitude.toStringAsFixed(2);
         log(result.toJson().toString());
       });
       debugPrint("latlng $_latlng");
@@ -137,13 +131,22 @@ class SelfiePageData with ChangeNotifier {
     }
   }
 
-  Future<void> uploadImage() async {
+  Future<bool> uploadImage(String name, String employeeId) async {
+    bool success = false;
     try {
       String base64 = base64Encode(_imageScreenshot!);
       debugPrint(base64);
-      HttpService.uploadImage(base64, _image!.name);
+      _response = await HttpService.uploadImage(base64,
+          "$_timestamp-$employeeId.jpg", name, employeeId, _latlng, _address);
+      if (_response!.success) {
+        success = true;
+      } else {
+        _errorList.add(_response!.message);
+      }
     } catch (e) {
       debugPrint('$e');
+      _errorList.add(_response!.message);
     }
+    return success;
   }
 }
