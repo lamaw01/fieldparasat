@@ -102,20 +102,18 @@ class _SelfiePageState extends State<SelfiePage> {
                 } else {
                   await instance
                       .uploadImage(
-                    nameController.text.trim(),
-                    idController.text.trim(),
-                  )
+                          nameController.text.trim(), idController.text.trim())
                       .then((result) {
-                    nameController.clear();
-                    idController.clear();
                     Navigator.of(context).pop();
-                    if (result) {
-                      _showMyToast('Successfully log');
+                    if (!hasInternet) {
+                      _showMyToast('Not connected to internet');
                     } else {
-                      if (hasInternet) {
-                        _showMyToast('Error uploading log');
+                      if (result) {
+                        _showMyToast('Successfully log');
+                        nameController.clear();
+                        idController.clear();
                       } else {
-                        _showMyToast('Not connected to internet');
+                        _showMyToast('Error uploading log');
                       }
                     }
                   });

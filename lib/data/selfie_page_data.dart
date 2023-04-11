@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
@@ -21,7 +20,6 @@ class SelfiePageData with ChangeNotifier {
   Uint8List? _imageScreenshot;
   Uint8List? get imageScreenshot => _imageScreenshot;
   Position? _position;
-  final _deviceInfo = DeviceInfoPlugin();
   var _latlng = "error getting latlng";
   String get latlng => _latlng;
   var _address = "error getting address";
@@ -30,8 +28,6 @@ class SelfiePageData with ChangeNotifier {
   String get heading => _heading;
   var _altitude = "";
   String get altitude => _altitude;
-  var _deviceId = "";
-  String get deviceId => _deviceId;
   var _speed = "";
   String get speed => _speed;
   var _timestamp = "00:00:00";
@@ -62,6 +58,9 @@ class SelfiePageData with ChangeNotifier {
   }
 
   Future<void> captureImage() async {
+    if (_imageScreenshot != null) {
+      _imageScreenshot = null;
+    }
     await screenshotController
         .capture(delay: const Duration(seconds: 3))
         .then((Uint8List? result) {
@@ -69,33 +68,20 @@ class SelfiePageData with ChangeNotifier {
       _imageScreenshot = result;
     }).catchError((Object err) {
       debugPrint(err.toString());
+      _errorList.add('initDeviceInfo $err');
     });
     notifyListeners();
   }
 
   void printData() {
-    debugPrint("_address $_address _latlng $_latlng _deviceId $_deviceId");
+    debugPrint("_address $_address _latlng $_latlng");
   }
 
   // initialize all functions
   Future<void> init() async {
-    await initDeviceInfo();
     await initPosition();
     await initTranslateLatLng();
     printData();
-  }
-
-  // get device info
-  Future<void> initDeviceInfo() async {
-    try {
-      await _deviceInfo.androidInfo.then((result) {
-        _deviceId = "${result.brand}:${result.product}:${result.id}";
-      });
-      debugPrint(_deviceId);
-    } catch (e) {
-      debugPrint('$e');
-      _errorList.add('initDeviceInfo $e');
-    }
   }
 
   // get lat lng of device
