@@ -1,17 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 
-import '../app_color.dart';
 import '../data/selfie_page_data.dart';
+import '../widget.dart/app_dialogs.dart';
 import '../widget.dart/bottomnavbar_widget.dart';
+import 'saves_page.dart';
 
 class SelfiePage extends StatefulWidget {
   const SelfiePage({super.key});
@@ -23,21 +21,15 @@ class SelfiePage extends StatefulWidget {
 class _SelfiePageState extends State<SelfiePage> {
   final nameController = TextEditingController();
   final idController = TextEditingController();
-  StreamSubscription<InternetConnectionStatus>? listener;
-  bool hasInternet = false;
 
   @override
   void initState() {
     super.initState();
-    listener = InternetConnectionChecker().onStatusChange.listen((status) {
-      switch (status) {
-        case InternetConnectionStatus.connected:
-          hasInternet = true;
-          break;
-        case InternetConnectionStatus.disconnected:
-          hasInternet = false;
-          break;
-      }
+    var internetChecker =
+        Provider.of<InternetConnectionChecker>(context, listen: false);
+    var instance = Provider.of<SelfiePageData>(context, listen: false);
+    internetChecker.onStatusChange.listen((status) async {
+      instance.internetStatus(status);
     });
   }
 
@@ -46,10 +38,9 @@ class _SelfiePageState extends State<SelfiePage> {
     super.dispose();
     nameController.dispose();
     idController.dispose();
-    listener!.cancel();
   }
 
-  Future<void> _showMyDialog(Uint8List image) async {
+  Future<void> _showMyDialog() async {
     var instance = Provider.of<SelfiePageData>(context, listen: false);
     return showDialog<void>(
       context: context,
@@ -95,95 +86,54 @@ class _SelfiePageState extends State<SelfiePage> {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Ok'),
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Save'),
               onPressed: () async {
                 if (nameController.text.isEmpty || idController.text.isEmpty) {
-                  _showMyToast('Missing Fields..');
+                  FocusScope.of(context).unfocus();
+                  AppDialogs.showMyToast('Missing Fields..', context);
+                } else {
+                  await instance
+                      .saveData(
+                          nameController.text.trim(), idController.text.trim())
+                      .then((_) {
+                    Navigator.of(context).pop();
+                    AppDialogs.showMyToast('Saved', context);
+                  });
+                }
+              },
+            ),
+            TextButton(
+              child: const Text('Send'),
+              onPressed: () async {
+                if (nameController.text.isEmpty || idController.text.isEmpty) {
+                  FocusScope.of(context).unfocus();
+                  AppDialogs.showMyToast('Missing Fields..', context);
                 } else {
                   await instance
                       .uploadImage(
                           nameController.text.trim(), idController.text.trim())
                       .then((result) {
                     Navigator.of(context).pop();
-                    if (!hasInternet) {
-                      _showMyToast('Not connected to internet');
+                    if (instance.hasInternet.value) {
+                      AppDialogs.showMyToast(
+                          'Not connected to internet', context);
                     } else {
                       if (result) {
-                        _showMyToast('Successfully log');
+                        AppDialogs.showMyToast('Successfully log', context);
                         nameController.clear();
                         idController.clear();
                       } else {
-                        _showMyToast('Error uploading log');
+                        AppDialogs.showMyToast('Error uploading log', context);
                       }
                     }
                   });
                 }
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _showMyToast(String message) {
-    showToastWidget(
-      Container(
-        height: 150.0,
-        width: 300.0,
-        padding: const EdgeInsets.all(5.0),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(5.0),
-          color: AppColor.kMainColor,
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                maxLines: 4,
-                style: const TextStyle(
-                  fontSize: 24.0,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      context: context,
-      animation: StyledToastAnimation.scale,
-      reverseAnimation: StyledToastAnimation.fade,
-      position: StyledToastPosition.center,
-      animDuration: const Duration(seconds: 1),
-      duration: const Duration(seconds: 5),
-      curve: Curves.elasticOut,
-      reverseCurve: Curves.linear,
-    );
-  }
-
-  void _showErrorLogsDialog(List<String> list) {
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Error logs'),
-          content: ListView.builder(
-            itemCount: list.length,
-            itemBuilder: (ctx, i) {
-              return Text(list[i]);
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Ok'),
-              onPressed: () {
-                Navigator.of(context).pop();
               },
             ),
           ],
@@ -200,6 +150,23 @@ class _SelfiePageState extends State<SelfiePage> {
       return Scaffold(
         appBar: AppBar(
           title: const Text('Parasat Selfie DTR'),
+        ),
+        drawer: Drawer(
+          child: ListView(
+            children: [
+              ListTile(
+                title: const Text('Saves'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => const SavesPage(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
         body: const Center(
           child: Text(
@@ -218,22 +185,39 @@ class _SelfiePageState extends State<SelfiePage> {
           title: GestureDetector(
             child: const Text('Parasat Selfie DTR'),
             onDoubleTap: () {
-              _showErrorLogsDialog(instance.errorList);
+              AppDialogs.showErrorLogsDialog(instance.errorList, context);
             },
           ),
           actions: [
             if (instance.imageScreenshot != null) ...[
               TextButton(
                 onPressed: () {
-                  _showMyDialog(instance.imageScreenshot!);
+                  _showMyDialog();
                 },
                 child: const Text(
-                  'Send',
+                  'Upload',
                   style: TextStyle(color: Colors.white),
                 ),
               ),
             ],
           ],
+        ),
+        drawer: Drawer(
+          child: ListView(
+            children: [
+              ListTile(
+                title: const Text('Saves'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => const SavesPage(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
         body: Screenshot(
           controller: instance.screenshotController,

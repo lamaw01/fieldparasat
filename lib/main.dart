@@ -1,22 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'app_color.dart';
 import 'data/selfie_page_data.dart';
+import 'model/idle_model.dart';
 import 'view/loading_page.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  await Hive.initFlutter();
+  Hive.registerAdapter(IdleModelAdapter());
+  await Hive.openBox<IdleModel>('idles');
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider<SelfiePageData>(
           create: (_) => SelfiePageData(),
+        ),
+        Provider<InternetConnectionChecker>(
+          create: (_) => InternetConnectionChecker.createInstance(
+            checkTimeout: const Duration(seconds: 5),
+            checkInterval: const Duration(seconds: 5),
+          ),
         ),
       ],
       child: const MyApp(),

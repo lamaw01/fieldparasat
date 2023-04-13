@@ -5,21 +5,25 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
 
-import '../model/selfie_model.dart';
+import '../model/idle_model.dart';
 import '../service/http_service.dart';
 import '../service/position_service.dart';
 
 class SelfiePageData with ChangeNotifier {
   final _picker = ImagePicker();
+  Position? _position;
   XFile? _image;
   XFile? get image => _image;
   Uint8List? _imageScreenshot;
   Uint8List? get imageScreenshot => _imageScreenshot;
-  Position? _position;
+  var _base64 = "";
+  String get base64 => _base64;
   var _latlng = "error getting latlng";
   String get latlng => _latlng;
   var _address = "error getting address";
@@ -37,10 +41,20 @@ class SelfiePageData with ChangeNotifier {
   List<String> get errorList => _errorList;
   //Create an instance of ScreenshotController
   final screenshotController = ScreenshotController();
-  SelfieModel? _response;
-  SelfieModel? get response => _response;
+  final _hasInternet = ValueNotifier(true);
+  ValueNotifier<bool> get hasInternet => _hasInternet;
 
-  // get imageuploadImage
+  // listens to internet status
+  void internetStatus(InternetConnectionStatus status) async {
+    if (status == InternetConnectionStatus.connected) {
+      hasInternet.value = true;
+    } else {
+      hasInternet.value = false;
+    }
+    debugPrint("hasInternet ${hasInternet.value}");
+  }
+
+  // get image uploadImage
   Future<void> getImage() async {
     try {
       await _picker
@@ -120,19 +134,51 @@ class SelfiePageData with ChangeNotifier {
   Future<bool> uploadImage(String name, String employeeId) async {
     bool success = false;
     try {
-      String base64 = base64Encode(_imageScreenshot!);
-      debugPrint(base64);
-      _response = await HttpService.uploadImage(base64,
+      _base64 = base64Encode(_imageScreenshot!);
+      debugPrint(_base64);
+      var response = await HttpService.uploadImage(_base64,
           "$_timestamp-$employeeId.jpg", name, employeeId, _latlng, _address);
-      if (_response!.success) {
+      if (response.success) {
         success = true;
       } else {
-        _errorList.add(_response!.message);
+        _errorList.add(response.message);
       }
     } catch (e) {
       debugPrint('$e');
-      _errorList.add(_response!.message);
+      _errorList.add(e.toString());
     }
     return success;
+  }
+
+  Future<bool> uploadSavedImage(String image, String imageName, String name,
+      String employeeId, String latlng, String address) async {
+    bool success = false;
+    try {
+      // var response = await HttpService.uploadImage(
+      //     image, imageName, name, employeeId, latlng, address);
+      // if (response.success) {
+      //   success = true;
+      // } else {
+      //   _errorList.add(response.message);
+      // }
+    } catch (e) {
+      debugPrint('$e');
+      _errorList.add(e.toString());
+    }
+    return success;
+  }
+
+  Future<void> saveData(String name, String employeeId) async {
+    var box = Hive.box<IdleModel>('idles');
+    var result = await box.add(IdleModel(
+      image: _base64,
+      imageName: "$_timestamp-$employeeId.jpg",
+      name: name,
+      employeeId: employeeId,
+      latlng: latlng,
+      address: address,
+      imageScreenshot: _imageScreenshot!,
+    ));
+    debugPrint('saveData $result');
   }
 }
