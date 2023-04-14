@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../app_color.dart';
 import '../data/selfie_page_data.dart';
-import 'selfie_page.dart';
+import 'tabbar_page.dart';
 
 class LoadingPage extends StatefulWidget {
   const LoadingPage({super.key});
@@ -20,7 +20,7 @@ class _LoadingPageState extends State<LoadingPage> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (BuildContext context) => const SelfiePage(),
+            builder: (BuildContext context) => const TabBarPage(),
           ),
         );
       });

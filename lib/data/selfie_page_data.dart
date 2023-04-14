@@ -22,8 +22,6 @@ class SelfiePageData with ChangeNotifier {
   XFile? get image => _image;
   Uint8List? _imageScreenshot;
   Uint8List? get imageScreenshot => _imageScreenshot;
-  var _base64 = "";
-  String get base64 => _base64;
   var _latlng = "error getting latlng";
   String get latlng => _latlng;
   var _address = "error getting address";
@@ -54,7 +52,7 @@ class SelfiePageData with ChangeNotifier {
     debugPrint("hasInternet ${hasInternet.value}");
   }
 
-  // get image uploadImage
+  // get image
   Future<void> getImage() async {
     try {
       await _picker
@@ -134,9 +132,9 @@ class SelfiePageData with ChangeNotifier {
   Future<bool> uploadImage(String name, String employeeId) async {
     bool success = false;
     try {
-      _base64 = base64Encode(_imageScreenshot!);
-      debugPrint(_base64);
-      var response = await HttpService.uploadImage(_base64,
+      String base64 = base64Encode(_imageScreenshot!);
+      debugPrint(base64);
+      var response = await HttpService.uploadImage(base64,
           "$_timestamp-$employeeId.jpg", name, employeeId, _latlng, _address);
       if (response.success) {
         success = true;
@@ -154,13 +152,13 @@ class SelfiePageData with ChangeNotifier {
       String employeeId, String latlng, String address) async {
     bool success = false;
     try {
-      // var response = await HttpService.uploadImage(
-      //     image, imageName, name, employeeId, latlng, address);
-      // if (response.success) {
-      //   success = true;
-      // } else {
-      //   _errorList.add(response.message);
-      // }
+      var response = await HttpService.uploadImage(
+          image, imageName, name, employeeId, latlng, address);
+      if (response.success) {
+        success = true;
+      } else {
+        _errorList.add(response.message);
+      }
     } catch (e) {
       debugPrint('$e');
       _errorList.add(e.toString());
@@ -169,16 +167,21 @@ class SelfiePageData with ChangeNotifier {
   }
 
   Future<void> saveData(String name, String employeeId) async {
-    var box = Hive.box<IdleModel>('idles');
-    var result = await box.add(IdleModel(
-      image: _base64,
-      imageName: "$_timestamp-$employeeId.jpg",
-      name: name,
-      employeeId: employeeId,
-      latlng: latlng,
-      address: address,
-      imageScreenshot: _imageScreenshot!,
-    ));
-    debugPrint('saveData $result');
+    try {
+      var box = Hive.box<IdleModel>('idles');
+      String base64 = base64Encode(_imageScreenshot!);
+      await box.add(IdleModel(
+        image: base64,
+        imageName: "$_timestamp-$employeeId.jpg",
+        name: name,
+        employeeId: employeeId,
+        latlng: latlng,
+        address: address,
+        imageScreenshot: _imageScreenshot!,
+      ));
+    } catch (e) {
+      debugPrint('$e');
+      _errorList.add(e.toString());
+    }
   }
 }

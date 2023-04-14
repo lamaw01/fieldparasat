@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:orion/app_color.dart';
 import 'package:provider/provider.dart';
 
 import '../data/selfie_page_data.dart';
@@ -18,7 +17,7 @@ class _SavesPageState extends State<SavesPage> {
   Future<bool?> _showDialogDeleteSave() async {
     return showDialog<bool>(
       context: context,
-      barrierDismissible: false, // user must tap button!
+      barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Confirm Delete'),
@@ -46,103 +45,100 @@ class _SavesPageState extends State<SavesPage> {
   Widget build(BuildContext context) {
     var instance = Provider.of<SelfiePageData>(context);
     var box = Hive.box<IdleModel>('idles');
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Saves'),
-      ),
-      body: ValueListenableBuilder<Box<IdleModel>>(
-        valueListenable: box.listenable(),
-        builder: (ctx, box, child) {
-          final idle = box.values.toList().cast<IdleModel>();
-          if (idle.isNotEmpty) {
-            return ListView.separated(
-              padding: const EdgeInsetsDirectional.all(10.0),
-              itemCount: idle.length,
-              separatorBuilder: (context, index) => const Divider(
-                color: Colors.black,
-              ),
-              itemBuilder: (ctx, i) {
-                return Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    SizedBox(
-                      child: Image.memory(
-                        idle[i].imageScreenshot,
-                        fit: BoxFit.fill,
-                      ),
+    return ValueListenableBuilder<Box<IdleModel>>(
+      valueListenable: box.listenable(),
+      builder: (ctx, box, child) {
+        final idle = box.values.toList().cast<IdleModel>();
+        if (idle.isNotEmpty) {
+          return ListView.separated(
+            itemCount: idle.length,
+            separatorBuilder: (context, index) => const Divider(
+              color: Colors.black,
+            ),
+            itemBuilder: (ctx, i) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    child: Image.memory(
+                      idle[i].imageScreenshot,
+                      fit: BoxFit.fill,
                     ),
-                    Positioned(
-                      top: 3.0,
-                      right: 7.0,
-                      child: TextButton(
-                        style: TextButton.styleFrom(
-                          backgroundColor: AppColor.kMainColor,
-                        ),
-                        child: const Text(
-                          'Upload',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onPressed: () async {
-                          await instance
-                              .uploadSavedImage(
-                                  idle[i].image,
-                                  idle[i].imageName,
-                                  idle[i].name,
-                                  idle[i].employeeId,
-                                  idle[i].latlng,
-                                  idle[i].address)
-                              .then((result) {
-                            if (!instance.hasInternet.value) {
+                  ),
+                  Positioned(
+                    top: 3.0,
+                    right: 7.0,
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.green,
+                      ),
+                      child: const Text(
+                        'Upload',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () async {
+                        await instance
+                            .uploadSavedImage(
+                                idle[i].image,
+                                idle[i].imageName,
+                                idle[i].name,
+                                idle[i].employeeId,
+                                idle[i].latlng,
+                                idle[i].address)
+                            .then((result) {
+                          if (!instance.hasInternet.value) {
+                            AppDialogs.showMyToast(
+                                'Not connected to internet', context);
+                          } else {
+                            if (result) {
                               AppDialogs.showMyToast(
-                                  'Not connected to internet', context);
-                            } else {
-                              if (result) {
-                                AppDialogs.showMyToast(
-                                    'Successfully log', context);
-                                idle[i].delete();
-                              } else {
-                                AppDialogs.showMyToast(
-                                    'Error uploading log', context);
-                              }
-                            }
-                          });
-                        },
-                      ),
-                    ),
-                    Positioned(
-                      top: 3.0,
-                      left: 7.0,
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.close,
-                          color: Colors.red,
-                        ),
-                        onPressed: () async {
-                          await _showDialogDeleteSave().then((result) {
-                            if (result!) {
+                                  'Successfully log', context);
                               idle[i].delete();
+                            } else {
+                              AppDialogs.showMyToast(
+                                  'Error uploading log', context);
                             }
-                          });
-                        },
-                      ),
+                          }
+                        });
+                      },
                     ),
-                  ],
-                );
-              },
-            );
-          } else {
-            return const Center(
-              child: Text(
-                'No Saves',
-                style: TextStyle(
-                  fontSize: 17.0,
-                  fontWeight: FontWeight.w600,
-                ),
+                  ),
+                  Positioned(
+                    top: 3.0,
+                    left: 7.0,
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.red,
+                      ),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      onPressed: () async {
+                        await _showDialogDeleteSave().then((result) {
+                          if (result!) {
+                            idle[i].delete();
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        } else {
+          return const Center(
+            child: Text(
+              'No Saved.',
+              style: TextStyle(
+                fontSize: 17.0,
+                fontWeight: FontWeight.w600,
               ),
-            );
-          }
-        },
-      ),
+            ),
+          );
+        }
+      },
     );
   }
 }
