@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
@@ -43,6 +45,7 @@ class _SavesPageState extends State<SavesPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ignore: unused_local_variable
     var instance = Provider.of<SelfiePageData>(context);
     var box = Hive.box<IdleModel>('idles');
     return ValueListenableBuilder<Box<IdleModel>>(
@@ -77,29 +80,24 @@ class _SavesPageState extends State<SavesPage> {
                         style: TextStyle(color: Colors.white),
                       ),
                       onPressed: () async {
-                        await instance
-                            .uploadSavedImage(
-                                idle[i].image,
-                                idle[i].imageName,
-                                idle[i].name,
-                                idle[i].employeeId,
-                                idle[i].latlng,
-                                idle[i].address)
-                            .then((result) {
-                          if (!instance.hasInternet.value) {
-                            AppDialogs.showMyToast(
-                                'Not connected to internet', context);
-                          } else {
-                            if (result) {
-                              AppDialogs.showMyToast(
-                                  'Successfully log', context);
-                              idle[i].delete();
-                            } else {
-                              AppDialogs.showMyToast(
-                                  'Error uploading log', context);
-                            }
-                          }
-                        });
+                        // await instance
+                        //     .uploadSavedImage(idle[i].image, idle[i].employeeId,
+                        //         idle[i].latlng, idle[i].address)
+                        //     .then((result) {
+                        //   if (!instance.hasInternet.value) {
+                        //     AppDialogs.showMyToast(
+                        //         'Not connected to internet', context);
+                        //   } else {
+                        //     if (result) {
+                        //       AppDialogs.showMyToast(
+                        //           'Successfully log', context);
+                        //       idle[i].delete();
+                        //     } else {
+                        //       AppDialogs.showMyToast(
+                        //           'Error uploading log', context);
+                        //     }
+                        //   }
+                        // });
                       },
                     ),
                   ),

@@ -6,8 +6,14 @@ import '../model/selfie_model.dart';
 
 class HttpService {
   static const String _serverUrl = 'http://uc-1.dnsalias.net:55083';
-  static Future<SelfieModel> uploadImage(String image, String imageName,
-      String name, String employeeId, String latlng, String address) async {
+  static Future<SelfieModel> uploadImage(
+      String image,
+      List<String> employeeId,
+      String latlng,
+      String address,
+      String department,
+      String selfieTimestamp,
+      String logType) async {
     var response = await http
         .post(Uri.parse('$_serverUrl/upload_image.php'),
             headers: <String, String>{
@@ -15,14 +21,16 @@ class HttpService {
               'Content-Type': 'application/json; charset=UTF-8',
             },
             body: json.encode(<String, dynamic>{
-              'name': name,
+              'image': image,
               'employee_id': employeeId,
               'latlng': latlng,
               'address': address,
-              'image_name': imageName,
-              'image': image
+              'is_selfie': true,
+              'department': department,
+              'selfie_timestamp': selfieTimestamp,
+              'log_type': logType
             }))
-        .timeout(const Duration(seconds: 5));
+        .timeout(const Duration(seconds: 10));
     debugPrint('insertLog ${response.statusCode} ${response.body}');
     var result = selfieModelFromJson(response.body);
     return result;

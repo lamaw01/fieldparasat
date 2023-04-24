@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 
+import '../app_color.dart';
 import '../data/selfie_page_data.dart';
 import '../widget.dart/app_dialogs.dart';
 import '../widget.dart/bottomnavbar_widget.dart';
 import 'saves_page.dart';
 import 'selfie_page.dart';
+import 'upload_page.dart';
 
 class TabBarPage extends StatefulWidget {
   const TabBarPage({super.key});
@@ -17,8 +19,10 @@ class TabBarPage extends StatefulWidget {
 }
 
 class _TabBarPageState extends State<TabBarPage> {
-  final nameController = TextEditingController();
-  final idController = TextEditingController();
+  final departmentController = TextEditingController();
+  var idControllerList = <TextEditingController>[
+    TextEditingController(),
+  ];
 
   @override
   void initState() {
@@ -34,11 +38,12 @@ class _TabBarPageState extends State<TabBarPage> {
   @override
   void dispose() {
     super.dispose();
-    nameController.dispose();
-    idController.dispose();
+    departmentController.dispose();
   }
 
+  // ignore: unused_element
   Future<void> _showMyDialog() async {
+    // ignore: unused_local_variable
     var instance = Provider.of<SelfiePageData>(context, listen: false);
     return showDialog<void>(
       context: context,
@@ -48,39 +53,80 @@ class _TabBarPageState extends State<TabBarPage> {
           contentPadding: const EdgeInsetsDirectional.symmetric(
               vertical: 12.0, horizontal: 8.0),
           title: const Text('Employee Info'),
-          content: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                textCapitalization: TextCapitalization.words,
-                controller: nameController,
-                autofocus: true,
-                keyboardType: TextInputType.text,
-                textInputAction: TextInputAction.done,
-                decoration: const InputDecoration(
-                  focusColor: Colors.white,
-                  hintText: 'Name..',
-                  contentPadding: EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
-                ),
-                onEditingComplete: () {
-                  FocusScope.of(context).unfocus();
-                },
+          content: StatefulBuilder(
+            builder: (context, setState) => SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (int i = 0; i < idControllerList.length; i++) ...[
+                    TextField(
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: Colors.grey, width: 1.0),
+                        ),
+                        hintText: 'Id number..',
+                        contentPadding:
+                            const EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              idControllerList.removeAt(i);
+                            });
+                          },
+                          icon: const Icon(Icons.delete),
+                        ),
+                      ),
+                      controller: idControllerList[i],
+                      keyboardType: TextInputType.number,
+                      textInputAction: TextInputAction.done,
+                      onEditingComplete: () {
+                        FocusScope.of(context).unfocus();
+                      },
+                    ),
+                    const SizedBox(
+                      height: 5.0,
+                    ),
+                  ],
+                  TextButton(
+                    style: TextButton.styleFrom(
+                      backgroundColor: AppColor.kMainColor,
+                    ),
+                    child: const Text(
+                      'Add Id',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        idControllerList.add(TextEditingController());
+                      });
+                    },
+                  ),
+                  const SizedBox(
+                    height: 10.0,
+                  ),
+                  TextField(
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                      ),
+                      hintText: 'Department..',
+                      contentPadding:
+                          EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
+                    ),
+                    textCapitalization: TextCapitalization.words,
+                    controller: departmentController,
+                    keyboardType: TextInputType.text,
+                    textInputAction: TextInputAction.done,
+                    onEditingComplete: () {
+                      FocusScope.of(context).unfocus();
+                    },
+                  ),
+                ],
               ),
-              TextField(
-                controller: idController,
-                keyboardType: TextInputType.number,
-                textInputAction: TextInputAction.done,
-                decoration: const InputDecoration(
-                  focusColor: Colors.white,
-                  hintText: 'ID number..',
-                  contentPadding: EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
-                ),
-                onEditingComplete: () {
-                  FocusScope.of(context).unfocus();
-                },
-              ),
-            ],
+            ),
           ),
           actions: <Widget>[
             TextButton(
@@ -89,53 +135,53 @@ class _TabBarPageState extends State<TabBarPage> {
                 Navigator.of(context).pop();
               },
             ),
-            TextButton(
-              child: const Text('Save'),
-              onPressed: () async {
-                if (nameController.text.isEmpty || idController.text.isEmpty) {
-                  FocusScope.of(context).unfocus();
-                  AppDialogs.showMyToast('Missing Fields..', context);
-                } else {
-                  await instance
-                      .saveData(
-                          nameController.text.trim(), idController.text.trim())
-                      .then((_) {
-                    Navigator.of(context).pop();
-                    nameController.clear();
-                    idController.clear();
-                    AppDialogs.showMyToast('Saved', context);
-                  });
-                }
-              },
-            ),
-            TextButton(
-              child: const Text('Send'),
-              onPressed: () async {
-                if (nameController.text.isEmpty || idController.text.isEmpty) {
-                  FocusScope.of(context).unfocus();
-                  AppDialogs.showMyToast('Missing Fields..', context);
-                } else {
-                  await instance
-                      .uploadImage(
-                          nameController.text.trim(), idController.text.trim())
-                      .then((result) {
-                    Navigator.of(context).pop();
-                    if (!instance.hasInternet.value) {
-                      AppDialogs.showMyToast(
-                          'Not connected to internet', context);
-                    } else {
-                      if (result) {
-                        AppDialogs.showMyToast('Successfully log', context);
-                        nameController.clear();
-                        idController.clear();
-                      } else {
-                        AppDialogs.showMyToast('Error uploading log', context);
-                      }
-                    }
-                  });
-                }
-              },
-            ),
+            // TextButton(
+            //   child: const Text('Save'),
+            //   onPressed: () async {
+            //     if (departmentController.text.isEmpty ||
+            //         idController.text.isEmpty) {
+            //       FocusScope.of(context).unfocus();
+            //       AppDialogs.showMyToast('Missing Fields..', context);
+            //     } else {
+            //       await instance
+            //           .saveData(departmentController.text.trim(),
+            //               idController.text.trim())
+            //           .then((_) {
+            //         Navigator.of(context).pop();
+            //         departmentController.clear();
+            //         idController.clear();
+            //         AppDialogs.showMyToast('Saved', context);
+            //       });
+            //     }
+            //   },
+            // ),
+            // TextButton(
+            //   child: const Text('Send'),
+            //   onPressed: () async {
+            //     if (idControllerList[0].text.isEmpty) {
+            //       FocusScope.of(context).unfocus();
+            //       AppDialogs.showMyToast('Missing Fields..', context);
+            //     } else {
+            //       await instance
+            //           .uploadImage(idControllerList[0].text.trim())
+            //           .then((result) {
+            //         Navigator.of(context).pop();
+            //         if (!instance.hasInternet.value) {
+            //           AppDialogs.showMyToast(
+            //               'Not connected to internet', context);
+            //         } else {
+            //           if (result) {
+            //             AppDialogs.showMyToast('Successfully log', context);
+            //             departmentController.clear();
+            //             idControllerList[0].clear();
+            //           } else {
+            //             AppDialogs.showMyToast('Error uploading log', context);
+            //           }
+            //         }
+            //       });
+            //     }
+            //   },
+            // ),
           ],
         );
       },
@@ -170,7 +216,13 @@ class _TabBarPageState extends State<TabBarPage> {
             if (instance.imageScreenshot != null) ...[
               TextButton(
                 onPressed: () {
-                  _showMyDialog();
+                  // _showMyDialog();
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => const UploadPage(),
+                    ),
+                  );
                 },
                 child: const Text(
                   'Upload',
