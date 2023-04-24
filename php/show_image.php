@@ -5,7 +5,7 @@ header("Content-type: image/jpeg");
 $employee_id = $_GET['employee_id'];
 
 // query select image
-$sql_insert_image = 'SELECT * from tbl_selfie_logs
+$sql_insert_image = 'SELECT * from tbl_logs
 WHERE employee_id = :employee_id ORDER BY time_stamp DESC LIMIT 1';
 
 try {
