@@ -6,7 +6,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import 'app_color.dart';
 import 'data/selfie_page_data.dart';
-import 'model/idle_model.dart';
+import 'model/history_model.dart';
 import 'view/loading_page.dart';
 
 Future<void> main() async {
@@ -16,8 +16,8 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
   await Hive.initFlutter();
-  Hive.registerAdapter(IdleModelAdapter());
-  await Hive.openBox<IdleModel>('idles');
+  Hive.registerAdapter(HistoryModelAdapter(), override: true);
+  await Hive.openBox<HistoryModel>('history');
   runApp(
     MultiProvider(
       providers: [

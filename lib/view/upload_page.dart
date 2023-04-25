@@ -147,30 +147,29 @@ class _UploadPageState extends State<UploadPage> {
                       break;
                     }
                   }
-
                   if (!isEmpty) {
-                    if (!instance.hasInternet.value) {
-                      AppDialogs.showMyToast(
-                          'Not connected to internet', context);
-                    } else {
-                      await instance.uploadImage(
-                          employeeId: <String>[
-                            for (var id in idControllerList) id.text,
-                          ],
-                          department: departmentController.text.trim(),
-                          logType: logType ? 'IN' : 'OUT').then((result) async {
-                        if (result) {
-                          AppDialogs.showMyToast('Successfully log', context);
-                          await Future.delayed(const Duration(seconds: 3))
-                              .then((_) {
-                            Navigator.of(context).pop();
-                          });
+                    await instance.uploadImage(
+                        employeeId: <String>[
+                          for (var id in idControllerList) id.text,
+                        ],
+                        department: departmentController.text.trim(),
+                        logType: logType ? 'IN' : 'OUT').then((result) async {
+                      if (result) {
+                        AppDialogs.showMyToast('Successfully log', context);
+                      } else {
+                        if (!instance.hasInternet.value) {
+                          AppDialogs.showMyToast(
+                              'Not connected to internet', context);
                         } else {
                           AppDialogs.showMyToast(
                               'Error uploading log', context);
                         }
+                      }
+                      await Future.delayed(const Duration(seconds: 3))
+                          .then((_) {
+                        Navigator.of(context).pop();
                       });
-                    }
+                    });
                   }
                 },
                 icon: const Icon(

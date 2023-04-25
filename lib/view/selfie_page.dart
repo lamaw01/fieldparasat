@@ -14,6 +14,18 @@ class SelfiePage extends StatefulWidget {
 }
 
 class _SelfiePageState extends State<SelfiePage> {
+  final style = const TextStyle(
+    fontSize: 17.0,
+    color: Colors.white,
+    shadows: [
+      Shadow(
+        blurRadius: 10.0,
+        color: Colors.black,
+        offset: Offset(0.0, 1.0),
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     var instance = Provider.of<SelfiePageData>(context);
@@ -53,38 +65,23 @@ class _SelfiePageState extends State<SelfiePage> {
                 children: [
                   Text(
                     "Speed: ${instance.speed}",
-                    style: const TextStyle(
-                      fontSize: 17.0,
-                      color: Colors.white,
-                    ),
+                    style: style,
                   ),
                   Text(
                     "Altitude: ${instance.altitude}m",
-                    style: const TextStyle(
-                      fontSize: 17.0,
-                      color: Colors.white,
-                    ),
+                    style: style,
                   ),
                   Text(
                     "Heading ${instance.heading}°",
-                    style: const TextStyle(
-                      fontSize: 17.0,
-                      color: Colors.white,
-                    ),
+                    style: style,
                   ),
                   Text(
                     instance.dateTimeDisplay,
-                    style: const TextStyle(
-                      fontSize: 17.0,
-                      color: Colors.white,
-                    ),
+                    style: style,
                   ),
                   Text(
                     instance.latlng,
-                    style: const TextStyle(
-                      fontSize: 17.0,
-                      color: Colors.white,
-                    ),
+                    style: style,
                   ),
                   SizedBox(
                     height: 50.0,
@@ -97,6 +94,13 @@ class _SelfiePageState extends State<SelfiePage> {
                         fontSize: 17.0,
                         color: Colors.white,
                         overflow: TextOverflow.ellipsis,
+                        shadows: [
+                          Shadow(
+                            blurRadius: 10.0,
+                            color: Colors.black,
+                            offset: Offset(0.0, 1.0),
+                          ),
+                        ],
                       ),
                     ),
                   ),

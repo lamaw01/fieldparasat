@@ -7,12 +7,14 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
 
+import '../model/history_model.dart';
 import '../service/http_service.dart';
 import '../service/position_service.dart';
 
@@ -48,7 +50,6 @@ class SelfiePageData with ChangeNotifier {
   void uploading() {
     _isUploading = !_isUploading;
     notifyListeners();
-    debugPrint(_isUploading.toString());
   }
 
   // listens to internet status
@@ -59,6 +60,13 @@ class SelfiePageData with ChangeNotifier {
       hasInternet.value = false;
     }
     debugPrint("hasInternet ${hasInternet.value}");
+    var box = Hive.box<HistoryModel>('history');
+    // if re-connected to internet check if theres failed upload then try to re-upload
+    for (var history in box.values) {
+      if (!history.uploaded) {
+        uploadHistory(history);
+      }
+    }
   }
 
   // get image
@@ -159,6 +167,12 @@ class SelfiePageData with ChangeNotifier {
       _errorList.add(e.toString());
     } finally {
       uploading();
+      // save to history
+      saveToHistory(
+          employeeId: employeeId,
+          department: department,
+          logType: logType,
+          uploaded: success);
       _image = null;
       _imageScreenshot = null;
       notifyListeners();
@@ -166,40 +180,54 @@ class SelfiePageData with ChangeNotifier {
     return success;
   }
 
-  // Future<bool> uploadSavedImage(
-  //     String image, String employeeId, String latlng, String address) async {
-  //   bool success = false;
-  //   try {
-  //     var response =
-  //         await HttpService.uploadImage(image, employeeId, latlng, address);
-  //     if (response.success) {
-  //       success = true;
-  //     } else {
-  //       _errorList.add(response.message);
-  //     }
-  //   } catch (e) {
-  //     debugPrint('$e');
-  //     _errorList.add(e.toString());
-  //   }
-  //   return success;
-  // }
+  Future<bool> uploadHistory(HistoryModel model) async {
+    bool success = false;
+    try {
+      var response = await HttpService.uploadImage(
+          model.image,
+          model.employeeId,
+          model.latlng,
+          model.address,
+          model.department,
+          model.selfieTimestamp,
+          model.logType);
+      if (response.success) {
+        success = true;
+        // delete and add history if successfully uploaded
+        model.delete();
+        var box = Hive.box<HistoryModel>('history');
+        await box.add(model..uploaded = true);
+      } else {
+        _errorList.add(response.message);
+      }
+    } catch (e) {
+      debugPrint('$e');
+      _errorList.add(e.toString());
+    }
+    return success;
+  }
 
-  // Future<void> saveData(String name, String employeeId) async {
-  //   try {
-  //     var box = Hive.box<IdleModel>('idles');
-  //     String base64 = base64Encode(_imageScreenshot!);
-  //     await box.add(IdleModel(
-  //       image: base64,
-  //       imageName: "$_timestamp-$employeeId.jpg",
-  //       name: name,
-  //       employeeId: employeeId,
-  //       latlng: latlng,
-  //       address: address,
-  //       imageScreenshot: _imageScreenshot!,
-  //     ));
-  //   } catch (e) {
-  //     debugPrint('$e');
-  //     _errorList.add(e.toString());
-  //   }
-  // }
+  Future<void> saveToHistory(
+      {required List<String> employeeId,
+      required String department,
+      required String logType,
+      required bool uploaded}) async {
+    try {
+      var box = Hive.box<HistoryModel>('history');
+      String base64 = base64Encode(_imageScreenshot!);
+      await box.add(HistoryModel(
+          image: base64,
+          employeeId: employeeId,
+          latlng: latlng,
+          address: address,
+          imageScreenshot: _imageScreenshot!,
+          department: department,
+          selfieTimestamp: _timestamp,
+          logType: logType,
+          uploaded: uploaded));
+    } catch (e) {
+      debugPrint('$e');
+      _errorList.add(e.toString());
+    }
+  }
 }
