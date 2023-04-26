@@ -16,7 +16,7 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
   await Hive.initFlutter();
-  Hive.registerAdapter(HistoryModelAdapter(), override: true);
+  Hive.registerAdapter(HistoryModelAdapter());
   await Hive.openBox<HistoryModel>('history');
   runApp(
     MultiProvider(

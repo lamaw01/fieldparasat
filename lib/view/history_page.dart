@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:provider/provider.dart';
 
-import '../data/selfie_page_data.dart';
 import '../model/history_model.dart';
 import 'history_detail_page.dart';
 
@@ -44,8 +42,6 @@ class _SavesPageState extends State<SavesPage> {
 
   @override
   Widget build(BuildContext context) {
-    // ignore: unused_local_variable
-    var instance = Provider.of<SelfiePageData>(context);
     var box = Hive.box<HistoryModel>('history');
     return ValueListenableBuilder<Box<HistoryModel>>(
       valueListenable: box.listenable(),

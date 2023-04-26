@@ -21,9 +21,17 @@ class _UploadPageState extends State<UploadPage> {
   bool logType = true;
 
   @override
+  void dispose() {
+    super.dispose();
+    departmentController.dispose();
+    for (var idController in idControllerList) {
+      idController.dispose();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     var instance = Provider.of<SelfiePageData>(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Upload info'),
@@ -73,9 +81,6 @@ class _UploadPageState extends State<UploadPage> {
                   controller: idControllerList[i],
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.done,
-                  onEditingComplete: () {
-                    FocusScope.of(context).unfocus();
-                  },
                 ),
                 const SizedBox(height: 5.0),
               ],
@@ -92,9 +97,6 @@ class _UploadPageState extends State<UploadPage> {
                 controller: departmentController,
                 keyboardType: TextInputType.text,
                 textInputAction: TextInputAction.done,
-                onEditingComplete: () {
-                  FocusScope.of(context).unfocus();
-                },
               ),
               const SizedBox(height: 5.0),
               Row(

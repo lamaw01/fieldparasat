@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 
+import '../app_color.dart';
 import '../data/selfie_page_data.dart';
 import '../widget.dart/app_dialogs.dart';
-import '../widget.dart/bottomnavbar_widget.dart';
 import 'history_page.dart';
 import 'selfie_page.dart';
 import 'upload_page.dart';
@@ -17,11 +17,6 @@ class TabBarPage extends StatefulWidget {
 }
 
 class _TabBarPageState extends State<TabBarPage> {
-  final departmentController = TextEditingController();
-  var idControllerList = <TextEditingController>[
-    TextEditingController(),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -31,12 +26,6 @@ class _TabBarPageState extends State<TabBarPage> {
     internetChecker.onStatusChange.listen((status) async {
       instance.internetStatus(status);
     });
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    departmentController.dispose();
   }
 
   @override
@@ -67,12 +56,10 @@ class _TabBarPageState extends State<TabBarPage> {
             if (instance.imageScreenshot != null) ...[
               TextButton(
                 onPressed: () {
-                  // _showMyDialog();
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (BuildContext context) => const UploadPage(),
-                    ),
+                        builder: (BuildContext context) => const UploadPage()),
                   );
                 },
                 child: const Text(
@@ -89,7 +76,30 @@ class _TabBarPageState extends State<TabBarPage> {
             SavesPage(),
           ],
         ),
-        bottomNavigationBar: const BottomNavBarWidget(),
+        bottomNavigationBar: Container(
+          color: AppColor.kMainColor,
+          width: double.infinity,
+          height: 60.0,
+          child: TextButton.icon(
+            onPressed: () async {
+              await instance.getImage();
+              await instance.captureImage();
+            },
+            icon: const Icon(
+              Icons.camera,
+              color: Colors.white,
+            ),
+            label: instance.image != null
+                ? const Text(
+                    'Retake Photo',
+                    style: TextStyle(color: Colors.white),
+                  )
+                : const Text(
+                    'Take Photo',
+                    style: TextStyle(color: Colors.white),
+                  ),
+          ),
+        ),
       ),
     );
   }

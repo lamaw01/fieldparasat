@@ -7,7 +7,6 @@ class HistoryDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    //  var instance = Provider.of<SelfiePageData>(context);
     const style = TextStyle(fontSize: 16.0);
     return Scaffold(
       appBar: AppBar(
