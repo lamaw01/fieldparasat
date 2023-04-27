@@ -71,7 +71,10 @@ class SelfiePageData with ChangeNotifier {
   Future<void> getImage() async {
     try {
       await _picker
-          .pickImage(source: ImageSource.camera, imageQuality: 80)
+          .pickImage(
+              source: ImageSource.camera,
+              imageQuality: 80,
+              preferredCameraDevice: CameraDevice.front)
           .then((XFile? result) {
         _image = result;
         notifyListeners();

@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'app_color.dart';
 import 'data/selfie_page_data.dart';
 import 'model/history_model.dart';
+import 'model/preset_model.dart';
 import 'view/loading_page.dart';
 
 Future<void> main() async {
@@ -17,7 +18,9 @@ Future<void> main() async {
   ]);
   await Hive.initFlutter();
   Hive.registerAdapter(HistoryModelAdapter());
+  Hive.registerAdapter(PresetModelAdapter());
   await Hive.openBox<HistoryModel>('history');
+  await Hive.openBox<PresetModel>('preset');
   runApp(
     MultiProvider(
       providers: [
