@@ -133,7 +133,7 @@ class _UploadPageState extends State<UploadPage> {
                 } else {
                   return const Center(
                     child: Text(
-                      'Empty History.',
+                      'Empty Preset.',
                       style: TextStyle(
                         fontSize: 17.0,
                         fontWeight: FontWeight.w600,
