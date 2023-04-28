@@ -138,6 +138,7 @@ class _AddPresetPageState extends State<AddPresetPage> {
                 ],
                 department: presetDepartmentController.text.trim(),
               ));
+              Navigator.of(context).pop();
             }
           },
           icon: const Icon(

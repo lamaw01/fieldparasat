@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-
 import 'package:image_picker/image_picker.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
@@ -123,7 +121,6 @@ class SelfiePageData with ChangeNotifier {
         _speed = result.speed.toString();
         _heading = result.heading.toString();
         _altitude = result.altitude.toStringAsFixed(2);
-        log(result.toJson().toString());
       });
       debugPrint("latlng $_latlng");
     } catch (e) {

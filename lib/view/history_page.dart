@@ -12,7 +12,7 @@ class SavesPage extends StatefulWidget {
 }
 
 class _SavesPageState extends State<SavesPage> {
-  Future<bool?> _showDialogDeleteCache() async {
+  Future<bool?> showDialogDeleteCache() async {
     return showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -69,7 +69,7 @@ class _SavesPageState extends State<SavesPage> {
                   title: Text(
                       '${history[i].logType} ${history[i].selfieTimestamp}'),
                   onLongPress: () async {
-                    await _showDialogDeleteCache().then((result) {
+                    await showDialogDeleteCache().then((result) {
                       if (result!) {
                         box.clear();
                         // history[i].delete();

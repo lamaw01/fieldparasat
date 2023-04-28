@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
 import '../app_color.dart';
+import '../model/preset_model.dart';
 import '../data/selfie_page_data.dart';
 import '../widget.dart/app_dialogs.dart';
 import 'add_preset_page.dart';
@@ -20,10 +22,6 @@ class _UploadPageState extends State<UploadPage> {
     TextEditingController(),
   ];
   bool logType = true;
-  final presetNameController = TextEditingController();
-  var idPresetControllerList = <TextEditingController>[
-    TextEditingController(),
-  ];
 
   @override
   void dispose() {
@@ -47,20 +45,15 @@ class _UploadPageState extends State<UploadPage> {
       );
     }
 
-    Future<void> showPresetDialog() async {
-      return showDialog<void>(
+    Future<bool?> showDialogDeletePreset(String presetName) async {
+      return showDialog<bool>(
         context: context,
-        barrierDismissible: true,
+        barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: const Text('Preset'),
-            content: ListView.builder(
-              itemCount: 4,
-              itemBuilder: (ctx, i) {
-                return const ListTile(
-                  title: Text('Team Alpha'),
-                );
-              },
+            title: const Text('Delete Preset'),
+            content: Text(
+              'Delete this preset $presetName?',
             ),
             actions: <Widget>[
               TextButton(
@@ -81,114 +74,92 @@ class _UploadPageState extends State<UploadPage> {
       );
     }
 
-    // Future<void> showAddPresetDialog() async {
-    //   return showDialog<void>(
-    //     context: context,
-    //     barrierDismissible: true,
-    //     builder: (BuildContext context) {
-    //       return StatefulBuilder(
-    //         builder: (ctx, setState) => AlertDialog(
-    //           title: const Text('Preset'),
-    //           content: Column(
-    //             mainAxisSize: MainAxisSize.min,
-    //             children: [
-    //               TextField(
-    //                 decoration: const InputDecoration(
-    //                   border: OutlineInputBorder(
-    //                     borderSide: BorderSide(color: Colors.grey, width: 1.0),
-    //                   ),
-    //                   hintText: 'Preset name..',
-    //                   contentPadding:
-    //                       EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
-    //                 ),
-    //                 controller: presetNameController,
-    //                 keyboardType: TextInputType.number,
-    //                 textInputAction: TextInputAction.done,
-    //               ),
-    //               const SizedBox(height: 10.0),
-    //               Expanded(
-    //                 child: ListView.separated(
-    //                   itemCount: idPresetControllerList.length,
-    //                   itemBuilder: (ctx, i) {
-    //                     return TextField(
-    //                       decoration: InputDecoration(
-    //                         border: const OutlineInputBorder(
-    //                           borderSide:
-    //                               BorderSide(color: Colors.grey, width: 1.0),
-    //                         ),
-    //                         hintText: 'Id number..',
-    //                         contentPadding: const EdgeInsets.fromLTRB(
-    //                             12.0, 12.0, 12.0, 12.0),
-    //                         suffixIcon: IconButton(
-    //                           onPressed: () {
-    //                             debugPrint(i.toString());
-    //                             if (idPresetControllerList.length != 1) {
-    //                               setState(() {
-    //                                 idPresetControllerList.removeAt(i);
-    //                               });
-    //                             }
-    //                           },
-    //                           icon: const Icon(
-    //                             Icons.delete,
-    //                             color: Colors.red,
-    //                           ),
-    //                         ),
-    //                       ),
-    //                       controller: idPresetControllerList[i],
-    //                       keyboardType: TextInputType.number,
-    //                       textInputAction: TextInputAction.done,
-    //                     );
-    //                   },
-    //                   separatorBuilder: (BuildContext context, int index) {
-    //                     return const SizedBox(height: 5.0);
-    //                   },
-    //                 ),
-    //               ),
-    //             ],
-    //           ),
-    //           actions: <Widget>[
-    //             TextButton(
-    //               child: const Text('Add Id'),
-    //               onPressed: () {
-    //                 setState(() {
-    //                   idPresetControllerList.add(TextEditingController());
-    //                 });
-    //               },
-    //             ),
-    //             TextButton(
-    //               child: const Text('Save'),
-    //               onPressed: () {
-    //                 Navigator.of(context).pop();
-    //               },
-    //             ),
-    //             TextButton(
-    //               child: const Text('Cancel'),
-    //               onPressed: () {
-    //                 Navigator.of(context).pop();
-    //               },
-    //             ),
-    //           ],
-    //         ),
-    //       );
-    //     },
-    //   );
-    // }
+    Future<void> showPresetDialog() async {
+      return showDialog<void>(
+        context: context,
+        barrierDismissible: true,
+        builder: (BuildContext context) {
+          var box = Hive.box<PresetModel>('preset');
+          return AlertDialog(
+            title: const Text('Preset'),
+            content: ValueListenableBuilder<Box<PresetModel>>(
+              valueListenable: box.listenable(),
+              builder: (ctx, box, child) {
+                final preset = box.values.toList().cast<PresetModel>().toList();
+                if (preset.isNotEmpty) {
+                  return ListView.builder(
+                    itemCount: preset.length,
+                    itemBuilder: (ctx, i) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Card(
+                            child: ListTile(
+                              dense: false,
+                              title: Text(
+                                preset[i].presetName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              onTap: () {
+                                idControllerList.clear();
+                                for (int j = 0;
+                                    j < preset[i].employeeId.length;
+                                    j++) {
+                                  idControllerList.add(
+                                    TextEditingController(
+                                        text: preset[i].employeeId[j]),
+                                  );
+                                }
+                                departmentController.text =
+                                    preset[i].department;
+                                Navigator.of(context).pop();
+                                setState(() {});
+                              },
+                              onLongPress: () {
+                                showDialogDeletePreset(preset[i].presetName)
+                                    .then((result) {
+                                  if (result!) {
+                                    preset[i].delete();
+                                  }
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  return const Center(
+                    child: Text(
+                      'Empty History.',
+                      style: TextStyle(
+                        fontSize: 17.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                }
+              },
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Cancel'),
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Upload info'),
         actions: [
-          // TextButton(
-          //   child: const Text(
-          //     'Add Id',
-          //     style: TextStyle(color: Colors.white),
-          //   ),
-          //   onPressed: () {},
-          // ),
-          // IconButton(
-          //   onPressed: () {},
-          //   icon: const Icon(Icons.settings),
-          // ),
           PopupMenuButton<String>(
             child: Container(
               margin: const EdgeInsets.all(10),
