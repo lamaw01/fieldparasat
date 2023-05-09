@@ -31,14 +31,45 @@ class _SelfiePageState extends State<SelfiePage> {
     var instance = Provider.of<SelfiePageData>(context);
     var size = MediaQuery.of(context).size;
     if (instance.image == null && instance.imageScreenshot == null) {
-      return const Center(
-        child: Text(
-          'No Image.',
-          style: TextStyle(
-            fontSize: 17.0,
-            fontWeight: FontWeight.w600,
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: instance.logIn ? Colors.green : null,
+                ),
+                onPressed: () {
+                  instance.changeLogType(true);
+                },
+                child: const Text(
+                  '   IN   ',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: !instance.logIn ? Colors.green : null,
+                ),
+                onPressed: () {
+                  instance.changeLogType(false);
+                },
+                child: const Text(
+                  '   OUT   ',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ),
+        ],
       );
     } else {
       return Screenshot(

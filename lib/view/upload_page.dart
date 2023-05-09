@@ -1,11 +1,8 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 import '../app_color.dart';
 import '../model/preset_model.dart';
-import '../data/selfie_page_data.dart';
 import '../widget.dart/app_dialogs.dart';
 import 'add_preset_page.dart';
 
@@ -24,6 +21,20 @@ class _UploadPageState extends State<UploadPage> {
   bool logType = true;
 
   @override
+  void initState() {
+    super.initState();
+    var box = Hive.box<PresetModel>('previous');
+    PresetModel? last = box.get('last');
+    if (last != null) {
+      departmentController.text = last.department;
+      idControllerList.clear();
+      for (var idText in last.employeeId) {
+        idControllerList.add(TextEditingController(text: idText));
+      }
+    }
+  }
+
+  @override
   void dispose() {
     super.dispose();
     departmentController.dispose();
@@ -34,8 +45,6 @@ class _UploadPageState extends State<UploadPage> {
 
   @override
   Widget build(BuildContext context) {
-    var instance = Provider.of<SelfiePageData>(context);
-
     Future<void> goToAddPresetPage() async {
       Navigator.push(
         context,
@@ -158,7 +167,7 @@ class _UploadPageState extends State<UploadPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Upload info'),
+        title: const Text('Info'),
         actions: [
           PopupMenuButton<String>(
             child: Container(
@@ -243,21 +252,6 @@ class _UploadPageState extends State<UploadPage> {
                 textInputAction: TextInputAction.done,
               ),
               const SizedBox(height: 5.0),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CupertinoSwitch(
-                    activeColor: Colors.green,
-                    value: logType,
-                    onChanged: (bool value) {
-                      setState(() {
-                        logType = value;
-                      });
-                    },
-                  ),
-                  Text(logType ? 'IN' : 'OUT'),
-                ],
-              ),
             ],
           ),
         ),
@@ -275,67 +269,42 @@ class _UploadPageState extends State<UploadPage> {
         color: AppColor.kMainColor,
         width: double.infinity,
         height: 60.0,
-        child: instance.isUploading
-            ? Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Text(
-                    'Uploading..',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                  SizedBox(width: 5.0),
-                  CircularProgressIndicator(
-                    color: Colors.white,
-                  ),
-                ],
-              )
-            : TextButton.icon(
-                onPressed: () async {
-                  bool isEmpty = false;
-                  for (int i = 0; i < idControllerList.length; i++) {
-                    if (idControllerList[i].text.isEmpty ||
-                        departmentController.text.isEmpty) {
-                      AppDialogs.showMyToast('Missing Fields..', context);
-                      isEmpty = true;
-                      break;
-                    }
-                  }
-                  if (!isEmpty) {
-                    await instance.uploadImage(
-                        employeeId: <String>[
-                          for (var id in idControllerList) id.text,
-                        ],
-                        department: departmentController.text.trim(),
-                        logType: logType ? 'IN' : 'OUT').then((result) async {
-                      if (result) {
-                        AppDialogs.showMyToast('Successfully log', context);
-                      } else {
-                        if (!instance.hasInternet.value) {
-                          AppDialogs.showMyToast(
-                              'Not connected to internet', context);
-                        } else {
-                          AppDialogs.showMyToast(
-                              'Error uploading log', context);
-                        }
-                      }
-                      await Future.delayed(const Duration(seconds: 3))
-                          .then((_) {
-                        Navigator.of(context).pop();
-                      });
-                    });
-                  }
-                },
-                icon: const Icon(
-                  Icons.upload,
-                  color: Colors.white,
+        child: TextButton.icon(
+          onPressed: () {
+            var box = Hive.box<PresetModel>('previous');
+            // box.get('last')!.delete();
+            bool isEmpty = false;
+            for (int i = 0; i < idControllerList.length; i++) {
+              if (idControllerList[i].text.isEmpty ||
+                  departmentController.text.isEmpty) {
+                AppDialogs.showMyToast('Missing Fields..', context);
+                isEmpty = true;
+                break;
+              }
+            }
+            if (!isEmpty) {
+              box.put(
+                'last',
+                PresetModel(
+                  presetName: 'last',
+                  department: departmentController.text.trim(),
+                  employeeId: <String>[
+                    for (var id in idControllerList) id.text,
+                  ],
                 ),
-                label: const Text(
-                  'Upload',
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
+              );
+              AppDialogs.showMyToast('Saved', context);
+            }
+          },
+          icon: const Icon(
+            Icons.save,
+            color: Colors.white,
+          ),
+          label: const Text(
+            'Save',
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
       ),
     );
   }

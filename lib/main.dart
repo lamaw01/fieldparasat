@@ -21,6 +21,7 @@ Future<void> main() async {
   Hive.registerAdapter(PresetModelAdapter());
   await Hive.openBox<HistoryModel>('history');
   await Hive.openBox<PresetModel>('preset');
+  await Hive.openBox<PresetModel>('previous');
   runApp(
     MultiProvider(
       providers: [

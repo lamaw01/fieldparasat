@@ -42,6 +42,13 @@ class SelfiePageData with ChangeNotifier {
   final screenshotController = ScreenshotController();
   final _hasInternet = ValueNotifier(true);
   ValueNotifier<bool> get hasInternet => _hasInternet;
+  var _logIn = true;
+  bool get logIn => _logIn;
+
+  void changeLogType(bool value) {
+    _logIn = value;
+    notifyListeners();
+  }
 
   void uploading() {
     _isUploading = !_isUploading;
@@ -66,7 +73,8 @@ class SelfiePageData with ChangeNotifier {
   }
 
   // get image
-  Future<void> getImage() async {
+  Future<bool> getImage() async {
+    bool hasImage = false;
     try {
       await _picker
           .pickImage(
@@ -75,6 +83,7 @@ class SelfiePageData with ChangeNotifier {
               preferredCameraDevice: CameraDevice.front)
           .then((XFile? result) {
         _image = result;
+        hasImage = true;
         notifyListeners();
       });
     } catch (e) {
@@ -83,6 +92,7 @@ class SelfiePageData with ChangeNotifier {
       _timestamp = DateFormat('yyyy-MM-dd-HH:mm:ss').format(DateTime.now());
       _dateTimeDisplay = DateFormat.yMEd().add_jms().format(DateTime.now());
     }
+    return hasImage;
   }
 
   Future<void> captureImage() async {
