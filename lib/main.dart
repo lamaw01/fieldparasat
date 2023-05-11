@@ -9,7 +9,6 @@ import 'data/selfie_page_data.dart';
 import 'model/history_model.dart';
 import 'model/preset_model.dart';
 import 'view/loading_page.dart';
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setPreferredOrientations([

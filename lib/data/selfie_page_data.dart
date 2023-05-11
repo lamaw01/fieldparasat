@@ -58,9 +58,9 @@ class SelfiePageData with ChangeNotifier {
   // listens to internet status
   void internetStatus(InternetConnectionStatus status) async {
     if (status == InternetConnectionStatus.connected) {
-      hasInternet.value = true;
+      _hasInternet.value = true;
     } else {
-      hasInternet.value = false;
+      _hasInternet.value = false;
     }
     debugPrint("hasInternet ${hasInternet.value}");
     var box = Hive.box<HistoryModel>('history');

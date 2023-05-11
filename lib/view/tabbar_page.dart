@@ -55,7 +55,37 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
             ],
           ),
           title: GestureDetector(
-            child: const Text('Parasat Selfie DTR'),
+            // child: const Text('Parasat Selfie DTR'),
+            child: ValueListenableBuilder<bool>(
+              valueListenable: instance.hasInternet,
+              builder: (ctx, value, child) {
+                if (value) {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: const [
+                      Text('Online'),
+                      Icon(
+                        Icons.signal_wifi_statusbar_4_bar,
+                        color: Colors.green,
+                      ),
+                    ],
+                  );
+                } else {
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: const [
+                      Text('Offline'),
+                      Icon(
+                        Icons.signal_wifi_off,
+                        color: Colors.red,
+                      ),
+                    ],
+                  );
+                }
+              },
+            ),
             onDoubleTap: () {
               AppDialogs.showErrorLogsDialog(instance.errorList, context);
             },
