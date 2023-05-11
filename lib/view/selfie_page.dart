@@ -1,10 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
 
+import '../app_color.dart';
 import '../data/selfie_page_data.dart';
+import '../model/preset_model.dart';
 
 class SelfiePage extends StatefulWidget {
   const SelfiePage({super.key});
@@ -29,11 +32,13 @@ class _SelfiePageState extends State<SelfiePage> {
   @override
   Widget build(BuildContext context) {
     var instance = Provider.of<SelfiePageData>(context);
+    var box = Hive.box<PresetModel>('previous');
     var size = MediaQuery.of(context).size;
     if (instance.image == null && instance.imageScreenshot == null) {
       return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          const SizedBox(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -69,6 +74,45 @@ class _SelfiePageState extends State<SelfiePage> {
               ),
             ],
           ),
+          ValueListenableBuilder<Box<PresetModel>>(
+              valueListenable: box.listenable(),
+              builder: (ctx, box, child) {
+                PresetModel? last = box.get('last');
+                if (last == null) {
+                  return const SizedBox();
+                } else {
+                  return Container(
+                    color: AppColor.kMainColor,
+                    width: double.infinity,
+                    height: 60.0,
+                    child: TextButton.icon(
+                      onPressed: () async {
+                        await instance.getImage().then((result) async {
+                          if (result) {
+                            await instance.captureImage();
+                            if (instance.tabController.index == 0) {
+                              instance.tabController.animateTo(1);
+                            }
+                            await instance.uploadImage(
+                              employeeId: last.employeeId,
+                              department: last.department,
+                              logType: instance.logIn ? 'IN' : 'OUT',
+                            );
+                          }
+                        });
+                      },
+                      icon: const Icon(
+                        Icons.camera,
+                        color: Colors.white,
+                      ),
+                      label: const Text(
+                        'Take Photo',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  );
+                }
+              }),
         ],
       );
     } else {

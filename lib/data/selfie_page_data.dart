@@ -44,6 +44,7 @@ class SelfiePageData with ChangeNotifier {
   ValueNotifier<bool> get hasInternet => _hasInternet;
   var _logIn = true;
   bool get logIn => _logIn;
+  late TabController tabController;
 
   void changeLogType(bool value) {
     _logIn = value;
