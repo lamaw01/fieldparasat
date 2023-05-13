@@ -26,13 +26,14 @@ class HistoryModelAdapter extends TypeAdapter<HistoryModel> {
       selfieTimestamp: fields[6] as String,
       logType: fields[7] as String,
       uploaded: fields[8] as bool,
+      team: fields[9] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, HistoryModel obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(10)
       ..writeByte(0)
       ..write(obj.image)
       ..writeByte(1)
@@ -50,7 +51,9 @@ class HistoryModelAdapter extends TypeAdapter<HistoryModel> {
       ..writeByte(7)
       ..write(obj.logType)
       ..writeByte(8)
-      ..write(obj.uploaded);
+      ..write(obj.uploaded)
+      ..writeByte(9)
+      ..write(obj.team);
   }
 
   @override

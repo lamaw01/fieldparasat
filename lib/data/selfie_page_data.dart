@@ -158,6 +158,7 @@ class SelfiePageData with ChangeNotifier {
   Future<bool> uploadImage(
       {required List<String> employeeId,
       required String department,
+      required String team,
       required String logType}) async {
     bool success = false;
     try {
@@ -165,7 +166,7 @@ class SelfiePageData with ChangeNotifier {
       String base64 = base64Encode(_imageScreenshot!);
       debugPrint(base64);
       var response = await HttpService.uploadImage(base64, employeeId, _latlng,
-          _address, department, _timestamp, logType);
+          _address, department, team, _timestamp, logType);
       if (response.success) {
         success = true;
       } else {
@@ -180,6 +181,7 @@ class SelfiePageData with ChangeNotifier {
       saveToHistory(
           employeeId: employeeId,
           department: department,
+          team: team,
           logType: logType,
           uploaded: success);
       _image = null;
@@ -198,6 +200,7 @@ class SelfiePageData with ChangeNotifier {
           model.latlng,
           model.address,
           model.department,
+          model.team,
           model.selfieTimestamp,
           model.logType);
       if (response.success) {
@@ -219,6 +222,7 @@ class SelfiePageData with ChangeNotifier {
   Future<void> saveToHistory(
       {required List<String> employeeId,
       required String department,
+      required String team,
       required String logType,
       required bool uploaded}) async {
     try {
@@ -231,6 +235,7 @@ class SelfiePageData with ChangeNotifier {
           address: address,
           imageScreenshot: _imageScreenshot!,
           department: department,
+          team: team,
           selfieTimestamp: _timestamp,
           logType: logType,
           uploaded: uploaded));

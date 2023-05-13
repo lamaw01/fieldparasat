@@ -52,6 +52,19 @@ class HistoryDetailPage extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text(
+                    'Team : ',
+                    style: style,
+                  ),
+                  Text(
+                    model.team,
+                    style: style,
+                  ),
+                ],
+              ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
                     'Timestamp : ',
                     style: style,
                   ),

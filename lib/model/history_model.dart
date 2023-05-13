@@ -15,6 +15,7 @@ class HistoryModel extends HiveObject {
     required this.selfieTimestamp,
     required this.logType,
     required this.uploaded,
+    required this.team,
   });
 
   @HiveField(0)
@@ -43,4 +44,7 @@ class HistoryModel extends HiveObject {
 
   @HiveField(8)
   bool uploaded;
+
+  @HiveField(9)
+  String team;
 }

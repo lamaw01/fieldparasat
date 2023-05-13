@@ -18,6 +18,7 @@ class _AddPresetPageState extends State<AddPresetPage> {
     TextEditingController(),
   ];
   final presetDepartmentController = TextEditingController();
+  final presetTeamController = TextEditingController();
 
   @override
   void dispose() {
@@ -27,6 +28,7 @@ class _AddPresetPageState extends State<AddPresetPage> {
       idPresetController.dispose();
     }
     presetDepartmentController.dispose();
+    presetTeamController.dispose();
   }
 
   @override
@@ -48,7 +50,7 @@ class _AddPresetPageState extends State<AddPresetPage> {
                   border: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.grey, width: 1.0),
                   ),
-                  hintText: 'Preset name..',
+                  label: Text('*Preset name'),
                   contentPadding: EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
                 ),
                 controller: presetNameController,
@@ -62,7 +64,7 @@ class _AddPresetPageState extends State<AddPresetPage> {
                     border: const OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey, width: 1.0),
                     ),
-                    hintText: 'Id number..',
+                    label: const Text('*Id number'),
                     contentPadding:
                         const EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
                     suffixIcon: IconButton(
@@ -92,11 +94,25 @@ class _AddPresetPageState extends State<AddPresetPage> {
                   border: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.grey, width: 1.0),
                   ),
-                  hintText: 'Department..',
+                  label: Text('*Department'),
                   contentPadding: EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
                 ),
                 textCapitalization: TextCapitalization.words,
                 controller: presetDepartmentController,
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.done,
+              ),
+              const SizedBox(height: 5.0),
+              TextField(
+                decoration: const InputDecoration(
+                  label: Text('Team'),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                  ),
+                  contentPadding: EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
+                ),
+                textCapitalization: TextCapitalization.words,
+                controller: presetTeamController,
                 keyboardType: TextInputType.text,
                 textInputAction: TextInputAction.done,
               ),
@@ -137,6 +153,7 @@ class _AddPresetPageState extends State<AddPresetPage> {
                   for (var id in idPresetControllerList) id.text,
                 ],
                 department: presetDepartmentController.text.trim(),
+                team: presetTeamController.text.trim(),
               ));
               Navigator.of(context).pop();
             }

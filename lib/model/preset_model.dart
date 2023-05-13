@@ -8,6 +8,7 @@ class PresetModel extends HiveObject {
     required this.presetName,
     required this.employeeId,
     required this.department,
+    required this.team,
   });
 
   @HiveField(0)
@@ -18,4 +19,7 @@ class PresetModel extends HiveObject {
 
   @HiveField(2)
   String department;
+
+  @HiveField(3)
+  String team;
 }

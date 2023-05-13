@@ -20,19 +20,22 @@ class PresetModelAdapter extends TypeAdapter<PresetModel> {
       presetName: fields[0] as String,
       employeeId: (fields[1] as List).cast<String>(),
       department: fields[2] as String,
+      team: fields[3] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, PresetModel obj) {
     writer
-      ..writeByte(3)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.presetName)
       ..writeByte(1)
       ..write(obj.employeeId)
       ..writeByte(2)
-      ..write(obj.department);
+      ..write(obj.department)
+      ..writeByte(3)
+      ..write(obj.team);
   }
 
   @override

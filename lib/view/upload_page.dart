@@ -15,6 +15,7 @@ class UploadPage extends StatefulWidget {
 
 class _UploadPageState extends State<UploadPage> {
   final departmentController = TextEditingController();
+  final teamController = TextEditingController();
   var idControllerList = <TextEditingController>[
     TextEditingController(),
   ];
@@ -27,6 +28,7 @@ class _UploadPageState extends State<UploadPage> {
     PresetModel? last = box.get('last');
     if (last != null) {
       departmentController.text = last.department;
+      teamController.text = last.team;
       idControllerList.clear();
       for (var idText in last.employeeId) {
         idControllerList.add(TextEditingController(text: idText));
@@ -38,6 +40,7 @@ class _UploadPageState extends State<UploadPage> {
   void dispose() {
     super.dispose();
     departmentController.dispose();
+    teamController.dispose();
     for (var idController in idControllerList) {
       idController.dispose();
     }
@@ -210,10 +213,10 @@ class _UploadPageState extends State<UploadPage> {
               for (int i = 0; i < idControllerList.length; i++) ...[
                 TextField(
                   decoration: InputDecoration(
+                    label: const Text('*Id number'),
                     border: const OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey, width: 1.0),
                     ),
-                    hintText: 'Id number..',
                     contentPadding:
                         const EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
                     suffixIcon: IconButton(
@@ -240,10 +243,10 @@ class _UploadPageState extends State<UploadPage> {
               const SizedBox(height: 5.0),
               TextField(
                 decoration: const InputDecoration(
+                  label: Text('*Department'),
                   border: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.grey, width: 1.0),
                   ),
-                  hintText: 'Department..',
                   contentPadding: EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
                 ),
                 textCapitalization: TextCapitalization.words,
@@ -252,6 +255,19 @@ class _UploadPageState extends State<UploadPage> {
                 textInputAction: TextInputAction.done,
               ),
               const SizedBox(height: 5.0),
+              TextField(
+                decoration: const InputDecoration(
+                  label: Text('Team'),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                  ),
+                  contentPadding: EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
+                ),
+                textCapitalization: TextCapitalization.words,
+                controller: teamController,
+                keyboardType: TextInputType.text,
+                textInputAction: TextInputAction.done,
+              ),
             ],
           ),
         ),
@@ -288,6 +304,7 @@ class _UploadPageState extends State<UploadPage> {
                 PresetModel(
                   presetName: 'last',
                   department: departmentController.text.trim(),
+                  team: teamController.text.trim(),
                   employeeId: <String>[
                     for (var id in idControllerList) id.text,
                   ],

@@ -96,6 +96,7 @@ class _SelfiePageState extends State<SelfiePage> {
                             await instance.uploadImage(
                               employeeId: last.employeeId,
                               department: last.department,
+                              team: last.team,
                               logType: instance.logIn ? 'IN' : 'OUT',
                             );
                           }

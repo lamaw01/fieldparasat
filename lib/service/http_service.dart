@@ -12,6 +12,7 @@ class HttpService {
       String latlng,
       String address,
       String department,
+      String team,
       String selfieTimestamp,
       String logType) async {
     var response = await http
@@ -27,6 +28,7 @@ class HttpService {
               'address': address,
               'is_selfie': true,
               'department': department,
+              'team': team,
               'selfie_timestamp': selfieTimestamp,
               'log_type': logType
             }))
