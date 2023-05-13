@@ -14,12 +14,13 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && array_key_exists('image', $input)){
     $image = $input['image'];
     $is_selfie = $input['is_selfie'];
     $department = $input['department'];
+    $team = $input['team'];
     $selfie_timestamp = $input['selfie_timestamp'];
     $log_type = $input['log_type'];
 
     // query insert image
-    $sql_insert_image = 'INSERT INTO tbl_logs(employee_id, latlng, address, image, is_selfie, department, selfie_timestamp, log_type)
-    VALUES (:employee_id,:latlng,:address,:image,:is_selfie,:department,:selfie_timestamp,:log_type)';
+    $sql_insert_image = 'INSERT INTO tbl_logs(employee_id, latlng, address, image, is_selfie, department, team, selfie_timestamp, log_type)
+    VALUES (:employee_id,:latlng,:address,:image,:is_selfie,:department,:team,:selfie_timestamp,:log_type)';
     try {
         // loop array of id
         foreach ($employee_id as $id) {
@@ -30,6 +31,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && array_key_exists('image', $input)){
             $insert_image->bindParam(':image', $image, PDO::PARAM_STR);
             $insert_image->bindParam(':is_selfie', $is_selfie, PDO::PARAM_BOOL);
             $insert_image->bindParam(':department', $department, PDO::PARAM_STR);
+            $insert_image->bindParam(':team', $team, PDO::PARAM_STR);
             $insert_image->bindParam(':selfie_timestamp', $selfie_timestamp, PDO::PARAM_STR);
             $insert_image->bindParam(':log_type', $log_type, PDO::PARAM_STR);
             $insert_image->execute();
