@@ -162,7 +162,6 @@ class SelfiePageData with ChangeNotifier {
       required String logType}) async {
     bool success = false;
     try {
-      uploading();
       String base64 = base64Encode(_imageScreenshot!);
       debugPrint(base64);
       var response = await HttpService.uploadImage(base64, employeeId, _latlng,
@@ -176,7 +175,6 @@ class SelfiePageData with ChangeNotifier {
       debugPrint('$e');
       _errorList.add(e.toString());
     } finally {
-      uploading();
       // save to history
       saveToHistory(
           employeeId: employeeId,

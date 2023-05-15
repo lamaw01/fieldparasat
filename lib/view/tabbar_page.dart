@@ -32,77 +32,81 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     var instance = Provider.of<SelfiePageData>(context);
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
-        appBar: AppBar(
-          bottom: TabBar(
-            controller: instance.tabController,
-            indicatorColor: Colors.white,
-            tabs: const [
-              Tab(
-                text: 'Home',
+    return AbsorbPointer(
+      absorbing: instance.isUploading,
+      child: DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: AppBar(
+            bottom: TabBar(
+              controller: instance.tabController,
+              indicatorColor: Colors.white,
+              tabs: const [
+                Tab(
+                  text: 'Home',
+                ),
+                Tab(
+                  text: 'History',
+                ),
+              ],
+            ),
+            title: GestureDetector(
+              // child: const Text('Parasat Selfie DTR'),
+              child: ValueListenableBuilder<bool>(
+                valueListenable: instance.hasInternet,
+                builder: (ctx, value, child) {
+                  if (value) {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: const [
+                        Text('Online'),
+                        Icon(
+                          Icons.signal_wifi_statusbar_4_bar,
+                          color: Colors.green,
+                        ),
+                      ],
+                    );
+                  } else {
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: const [
+                        Text('Offline'),
+                        Icon(
+                          Icons.signal_wifi_off,
+                          color: Colors.red,
+                        ),
+                      ],
+                    );
+                  }
+                },
               ),
-              Tab(
-                text: 'History',
+              onDoubleTap: () {
+                AppDialogs.showErrorLogsDialog(instance.errorList, context);
+              },
+            ),
+            actions: [
+              IconButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (BuildContext context) => const UploadPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.arrow_forward),
               ),
             ],
           ),
-          title: GestureDetector(
-            // child: const Text('Parasat Selfie DTR'),
-            child: ValueListenableBuilder<bool>(
-              valueListenable: instance.hasInternet,
-              builder: (ctx, value, child) {
-                if (value) {
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: const [
-                      Text('Online'),
-                      Icon(
-                        Icons.signal_wifi_statusbar_4_bar,
-                        color: Colors.green,
-                      ),
-                    ],
-                  );
-                } else {
-                  return Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: const [
-                      Text('Offline'),
-                      Icon(
-                        Icons.signal_wifi_off,
-                        color: Colors.red,
-                      ),
-                    ],
-                  );
-                }
-              },
-            ),
-            onDoubleTap: () {
-              AppDialogs.showErrorLogsDialog(instance.errorList, context);
-            },
+          body: TabBarView(
+            controller: instance.tabController,
+            children: const [
+              SelfiePage(),
+              SavesPage(),
+            ],
           ),
-          actions: [
-            IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (BuildContext context) => const UploadPage()),
-                );
-              },
-              icon: const Icon(Icons.arrow_forward),
-            ),
-          ],
-        ),
-        body: TabBarView(
-          controller: instance.tabController,
-          children: const [
-            SelfiePage(),
-            SavesPage(),
-          ],
         ),
       ),
     );

@@ -89,6 +89,7 @@ class _SelfiePageState extends State<SelfiePage> {
                       onPressed: () async {
                         await instance.getImage().then((result) async {
                           if (result) {
+                            instance.uploading();
                             await instance.captureImage();
                             if (instance.tabController.index == 0) {
                               instance.tabController.animateTo(1);
@@ -99,6 +100,7 @@ class _SelfiePageState extends State<SelfiePage> {
                               team: last.team,
                               logType: instance.logIn ? 'IN' : 'OUT',
                             );
+                            instance.uploading();
                           }
                         });
                       },
