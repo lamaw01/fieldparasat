@@ -6,7 +6,8 @@ $employee_id = $_GET['employee_id'];
 
 // query select image
 $sql_insert_image = 'SELECT * from tbl_logs
-WHERE employee_id = :employee_id ORDER BY time_stamp DESC LIMIT 1';
+WHERE employee_id = :employee_id AND is_selfie = 1
+ORDER BY time_stamp DESC LIMIT 1';
 
 try {
     $insert_image = $conn->prepare($sql_insert_image);
