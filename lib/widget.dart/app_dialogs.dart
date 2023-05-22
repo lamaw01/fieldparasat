@@ -70,7 +70,7 @@ class AppDialogs {
     );
   }
 
-  static void showAppVersionaDialog(
+  static void showAppVersionDialog(
       String title, String id, BuildContext context) {
     showDialog<void>(
       context: context,
@@ -78,7 +78,7 @@ class AppDialogs {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text(title),
-          content: SelectableText('Device id: $id '),
+          content: SelectableText(id),
           actions: <Widget>[
             TextButton(
               child: const Text('Ok'),
