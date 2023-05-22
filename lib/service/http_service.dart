@@ -37,4 +37,24 @@ class HttpService {
     var result = selfieModelFromJson(response.body);
     return result;
   }
+
+  static Future<void> insertDeviceLog(String id, String logTime, String address,
+      String latlng, String version) async {
+    var response = await http
+        .post(Uri.parse('$_serverUrl/insert_device_log.php'),
+            headers: <String, String>{
+              'Accept': '*/*',
+              'Content-Type': 'application/json; charset=UTF-8',
+            },
+            body: json.encode(<String, dynamic>{
+              "device_id": id,
+              "log_time": logTime,
+              "address": address,
+              "latlng": latlng,
+              "version": version,
+              "app_name": 'Orion'
+            }))
+        .timeout(const Duration(seconds: 5));
+    debugPrint('insertDeviceLog ${response.statusCode} ${response.body}');
+  }
 }

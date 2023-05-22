@@ -88,6 +88,17 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
             ),
             actions: [
               IconButton(
+                icon: const Icon(Icons.info),
+                iconSize: 30.0,
+                onPressed: () {
+                  AppDialogs.showAppVersionaDialog(
+                      'Orion ${instance.appVersion}',
+                      'Device id: ${instance.deviceId}',
+                      context);
+                },
+              ),
+              IconButton(
+                iconSize: 30.0,
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -96,7 +107,7 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
                     ),
                   );
                 },
-                icon: const Icon(Icons.arrow_forward),
+                icon: const Icon(Icons.person),
               ),
             ],
           ),

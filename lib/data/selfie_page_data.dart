@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -9,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:screenshot/screenshot.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../model/history_model.dart';
 import '../service/http_service.dart';
@@ -42,8 +44,15 @@ class SelfiePageData with ChangeNotifier {
   final screenshotController = ScreenshotController();
   final _hasInternet = ValueNotifier(true);
   ValueNotifier<bool> get hasInternet => _hasInternet;
+  // timestamp of opening device
+  final _deviceLogtime =
+      DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
   var _logIn = true;
   bool get logIn => _logIn;
+  var _appVersion = "0.0.0";
+  String get appVersion => _appVersion;
+  var _deviceId = "";
+  String get deviceId => _deviceId;
   late TabController tabController;
 
   void changeLogType(bool value) {
@@ -80,7 +89,7 @@ class SelfiePageData with ChangeNotifier {
       await _picker
           .pickImage(
               source: ImageSource.camera,
-              imageQuality: 80,
+              imageQuality: 70,
               preferredCameraDevice: CameraDevice.front)
           .then((XFile? result) {
         _image = result;
@@ -112,15 +121,39 @@ class SelfiePageData with ChangeNotifier {
     notifyListeners();
   }
 
-  void printData() {
-    debugPrint("_address $_address _latlng $_latlng");
-  }
-
   // initialize all functions
   Future<void> init() async {
+    await initPackageInfo();
+    await initDeviceInfo();
     await initPosition();
     await initTranslateLatLng();
-    printData();
+    await insertDeviceLog();
+  }
+
+  // get device version
+  Future<void> initPackageInfo() async {
+    try {
+      await PackageInfo.fromPlatform().then((result) {
+        _appVersion = result.version;
+        debugPrint(_appVersion);
+      });
+    } catch (e) {
+      debugPrint('$e');
+      _errorList.add('initDeviceInfo $e');
+    }
+  }
+
+  // get device info
+  Future<void> initDeviceInfo() async {
+    try {
+      await DeviceInfoPlugin().androidInfo.then((result) {
+        _deviceId = "${result.brand}:${result.product}:${result.id}";
+      });
+      debugPrint(_deviceId);
+    } catch (e) {
+      debugPrint('$e');
+      _errorList.add('initDeviceInfo $e');
+    }
   }
 
   // get lat lng of device
@@ -152,6 +185,17 @@ class SelfiePageData with ChangeNotifier {
     } catch (e) {
       debugPrint('$e');
       _errorList.add('initTranslateLatLng $e');
+    }
+  }
+
+  // insert device log to database
+  Future<void> insertDeviceLog() async {
+    try {
+      await HttpService.insertDeviceLog(
+          _deviceId, _deviceLogtime, _address, _latlng, _appVersion);
+    } catch (e) {
+      debugPrint('$e');
+      _errorList.add('insertDeviceLog $e');
     }
   }
 

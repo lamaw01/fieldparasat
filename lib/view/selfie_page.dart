@@ -42,33 +42,43 @@ class _SelfiePageState extends State<SelfiePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              TextButton(
-                style: TextButton.styleFrom(
-                  backgroundColor: instance.logIn ? Colors.green : null,
-                ),
-                onPressed: () {
-                  instance.changeLogType(true);
-                },
-                child: const Text(
-                  '   IN   ',
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.w600,
+              SizedBox(
+                width: 150.0,
+                height: 100.0,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: instance.logIn ? Colors.green : null,
+                  ),
+                  onPressed: () {
+                    instance.changeLogType(true);
+                  },
+                  child: Text(
+                    'IN',
+                    style: TextStyle(
+                      fontSize: 32.0,
+                      fontWeight: FontWeight.w600,
+                      color: instance.logIn ? Colors.white : null,
+                    ),
                   ),
                 ),
               ),
-              TextButton(
-                style: TextButton.styleFrom(
-                  backgroundColor: !instance.logIn ? Colors.green : null,
-                ),
-                onPressed: () {
-                  instance.changeLogType(false);
-                },
-                child: const Text(
-                  '   OUT   ',
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.w600,
+              SizedBox(
+                width: 150.0,
+                height: 100.0,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: !instance.logIn ? Colors.green : null,
+                  ),
+                  onPressed: () {
+                    instance.changeLogType(false);
+                  },
+                  child: Text(
+                    'OUT',
+                    style: TextStyle(
+                      fontSize: 32.0,
+                      fontWeight: FontWeight.w600,
+                      color: !instance.logIn ? Colors.white : null,
+                    ),
                   ),
                 ),
               ),
