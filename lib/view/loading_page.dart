@@ -16,14 +16,17 @@ class _LoadingPageState extends State<LoadingPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await context.read<SelfiePageData>().init().then((_) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (BuildContext context) => const TabBarPage(),
-          ),
-        );
-      });
+      await context.read<SelfiePageData>().checkLocationService(context);
+      if (context.mounted) {
+        await context.read<SelfiePageData>().init().then((_) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (BuildContext context) => const TabBarPage(),
+            ),
+          );
+        });
+      }
     });
   }
 
