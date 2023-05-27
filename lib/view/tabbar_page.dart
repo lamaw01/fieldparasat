@@ -41,6 +41,7 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
             bottom: TabBar(
               controller: instance.tabController,
               indicatorColor: Colors.white,
+              labelStyle: const TextStyle(fontSize: 20.0),
               tabs: const [
                 Tab(
                   text: 'Home',

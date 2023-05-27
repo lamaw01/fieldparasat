@@ -46,6 +46,7 @@ class _AddPresetPageState extends State<AddPresetPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
+                style: const TextStyle(fontSize: 20.0),
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.grey, width: 1.0),
@@ -60,11 +61,12 @@ class _AddPresetPageState extends State<AddPresetPage> {
               const SizedBox(height: 10.0),
               for (int i = 0; i < idPresetControllerList.length; i++) ...[
                 TextField(
+                  style: const TextStyle(fontSize: 20.0),
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey, width: 1.0),
                     ),
-                    label: const Text('*Id number'),
+                    label: const Text('*ID number'),
                     contentPadding:
                         const EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 12.0),
                     suffixIcon: IconButton(
@@ -86,10 +88,10 @@ class _AddPresetPageState extends State<AddPresetPage> {
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.done,
                 ),
-                const SizedBox(height: 5.0),
+                const SizedBox(height: 10.0),
               ],
-              const SizedBox(height: 5.0),
               TextField(
+                style: const TextStyle(fontSize: 20.0),
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(
                     borderSide: BorderSide(color: Colors.grey, width: 1.0),
@@ -102,8 +104,9 @@ class _AddPresetPageState extends State<AddPresetPage> {
                 keyboardType: TextInputType.text,
                 textInputAction: TextInputAction.done,
               ),
-              const SizedBox(height: 5.0),
+              const SizedBox(height: 10.0),
               TextField(
+                style: const TextStyle(fontSize: 20.0),
                 decoration: const InputDecoration(
                   label: Text('Team'),
                   border: OutlineInputBorder(
@@ -127,12 +130,12 @@ class _AddPresetPageState extends State<AddPresetPage> {
           });
         },
         backgroundColor: Colors.green,
-        child: const Text('Add Id'),
+        child: const Text('Add ID'),
       ),
       bottomNavigationBar: Container(
         color: AppColor.kMainColor,
         width: double.infinity,
-        height: 60.0,
+        height: 90.0,
         child: TextButton.icon(
           onPressed: () async {
             var box = Hive.box<PresetModel>('preset');
@@ -161,10 +164,14 @@ class _AddPresetPageState extends State<AddPresetPage> {
           icon: const Icon(
             Icons.save,
             color: Colors.white,
+            size: 30.0,
           ),
           label: const Text(
             'Save',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24.0,
+            ),
           ),
         ),
       ),

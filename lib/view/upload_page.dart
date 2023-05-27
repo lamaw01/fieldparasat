@@ -212,8 +212,9 @@ class _UploadPageState extends State<UploadPage> {
             children: [
               for (int i = 0; i < idControllerList.length; i++) ...[
                 TextField(
+                  style: const TextStyle(fontSize: 20.0),
                   decoration: InputDecoration(
-                    label: const Text('*Id number'),
+                    label: const Text('*ID number'),
                     border: const OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.grey, width: 1.0),
                     ),
@@ -238,10 +239,10 @@ class _UploadPageState extends State<UploadPage> {
                   keyboardType: TextInputType.number,
                   textInputAction: TextInputAction.done,
                 ),
-                const SizedBox(height: 5.0),
+                const SizedBox(height: 10.0),
               ],
-              const SizedBox(height: 5.0),
               TextField(
+                style: const TextStyle(fontSize: 20.0),
                 decoration: const InputDecoration(
                   label: Text('*Department'),
                   border: OutlineInputBorder(
@@ -254,8 +255,9 @@ class _UploadPageState extends State<UploadPage> {
                 keyboardType: TextInputType.text,
                 textInputAction: TextInputAction.done,
               ),
-              const SizedBox(height: 5.0),
+              const SizedBox(height: 10.0),
               TextField(
+                style: const TextStyle(fontSize: 20.0),
                 decoration: const InputDecoration(
                   label: Text('Team'),
                   border: OutlineInputBorder(
@@ -279,12 +281,12 @@ class _UploadPageState extends State<UploadPage> {
           });
         },
         backgroundColor: Colors.green,
-        child: const Text('Add Id'),
+        child: const Text('Add ID'),
       ),
       bottomNavigationBar: Container(
         color: AppColor.kMainColor,
         width: double.infinity,
-        height: 60.0,
+        height: 90.0,
         child: TextButton.icon(
           onPressed: () {
             var box = Hive.box<PresetModel>('previous');
@@ -316,10 +318,14 @@ class _UploadPageState extends State<UploadPage> {
           icon: const Icon(
             Icons.save,
             color: Colors.white,
+            size: 30.0,
           ),
           label: const Text(
             'Save',
-            style: TextStyle(color: Colors.white),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 24.0,
+            ),
           ),
         ),
       ),

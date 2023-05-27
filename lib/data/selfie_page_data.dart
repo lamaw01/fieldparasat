@@ -33,7 +33,7 @@ class SelfiePageData with ChangeNotifier {
   String get altitude => _altitude;
   var _speed = "";
   String get speed => _speed;
-  var _timestamp = "00:00:00";
+  var _timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
   var _dateTimeDisplay = "00:00:00";
   String get dateTimeDisplay => _dateTimeDisplay;
   var _isUploading = false;
@@ -86,20 +86,19 @@ class SelfiePageData with ChangeNotifier {
   Future<bool> getImage() async {
     bool hasImage = false;
     try {
-      await _picker
-          .pickImage(
-              source: ImageSource.camera,
-              imageQuality: 70,
-              preferredCameraDevice: CameraDevice.front)
-          .then((XFile? result) {
+      XFile? result = await _picker.pickImage(
+          source: ImageSource.camera,
+          imageQuality: 70,
+          preferredCameraDevice: CameraDevice.front);
+      if (result != null) {
         _image = result;
         hasImage = true;
         notifyListeners();
-      });
+      }
     } catch (e) {
       debugPrint('getImage $e');
     } finally {
-      _timestamp = DateFormat('yyyy-MM-dd-HH:mm:ss').format(DateTime.now());
+      _timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
       _dateTimeDisplay = DateFormat.yMEd().add_jms().format(DateTime.now());
     }
     return hasImage;

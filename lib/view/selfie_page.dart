@@ -47,7 +47,8 @@ class _SelfiePageState extends State<SelfiePage> {
                 height: 100.0,
                 child: TextButton(
                   style: TextButton.styleFrom(
-                    backgroundColor: instance.logIn ? Colors.green : null,
+                    backgroundColor:
+                        instance.logIn ? Colors.green : Colors.grey[400],
                   ),
                   onPressed: () {
                     instance.changeLogType(true);
@@ -67,7 +68,8 @@ class _SelfiePageState extends State<SelfiePage> {
                 height: 100.0,
                 child: TextButton(
                   style: TextButton.styleFrom(
-                    backgroundColor: !instance.logIn ? Colors.green : null,
+                    backgroundColor:
+                        !instance.logIn ? Colors.green : Colors.grey[400],
                   ),
                   onPressed: () {
                     instance.changeLogType(false);
@@ -94,7 +96,7 @@ class _SelfiePageState extends State<SelfiePage> {
                   return Container(
                     color: AppColor.kMainColor,
                     width: double.infinity,
-                    height: 60.0,
+                    height: 90.0,
                     child: TextButton.icon(
                       onPressed: () async {
                         await instance.getImage().then((result) async {
@@ -117,10 +119,14 @@ class _SelfiePageState extends State<SelfiePage> {
                       icon: const Icon(
                         Icons.camera,
                         color: Colors.white,
+                        size: 30.0,
                       ),
                       label: const Text(
                         'Take Photo',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24.0,
+                        ),
                       ),
                     ),
                   );
