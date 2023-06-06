@@ -57,10 +57,10 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
                 valueListenable: instance.hasInternet,
                 builder: (ctx, value, child) {
                   if (value) {
-                    return Row(
+                    return const Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: const [
+                      children: [
                         Text('Online'),
                         Icon(
                           Icons.signal_wifi_statusbar_4_bar,
@@ -69,10 +69,10 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
                       ],
                     );
                   } else {
-                    return Row(
+                    return const Row(
                       mainAxisSize: MainAxisSize.min,
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: const [
+                      children: [
                         Text('Offline'),
                         Icon(
                           Icons.signal_wifi_off,

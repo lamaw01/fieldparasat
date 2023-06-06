@@ -9,6 +9,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
+import 'package:ntp/ntp.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -33,7 +34,8 @@ class SelfiePageData with ChangeNotifier {
   String get altitude => _altitude;
   var _speed = "";
   String get speed => _speed;
-  var _timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
+  var _selfieTimestamp = "00:00:00";
+  String get selfieTimestamp => _selfieTimestamp;
   var _dateTimeDisplay = "00:00:00";
   String get dateTimeDisplay => _dateTimeDisplay;
   var _isUploading = false;
@@ -44,9 +46,6 @@ class SelfiePageData with ChangeNotifier {
   final screenshotController = ScreenshotController();
   final _hasInternet = ValueNotifier(true);
   ValueNotifier<bool> get hasInternet => _hasInternet;
-  // timestamp of opening device
-  final _deviceLogtime =
-      DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
   var _logIn = true;
   bool get logIn => _logIn;
   var _appVersion = "0.0.0";
@@ -98,8 +97,9 @@ class SelfiePageData with ChangeNotifier {
     } catch (e) {
       debugPrint('getImage $e');
     } finally {
-      _timestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now());
-      _dateTimeDisplay = DateFormat.yMEd().add_jms().format(DateTime.now());
+      DateTime networkTime = await getNetworkTime();
+      _selfieTimestamp = DateFormat('yyyy-MM-dd HH:mm:ss').format(networkTime);
+      _dateTimeDisplay = DateFormat.yMEd().add_jms().format(networkTime);
     }
     return hasImage;
   }
@@ -224,7 +224,11 @@ class SelfiePageData with ChangeNotifier {
   Future<void> insertDeviceLog() async {
     try {
       await HttpService.insertDeviceLog(
-          _deviceId, _deviceLogtime, _address, _latlng, _appVersion);
+          _deviceId,
+          DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
+          _address,
+          _latlng,
+          _appVersion);
     } catch (e) {
       debugPrint('$e');
       _errorList.add('insertDeviceLog $e');
@@ -240,8 +244,16 @@ class SelfiePageData with ChangeNotifier {
     try {
       String base64 = base64Encode(_imageScreenshot!);
       debugPrint(base64);
-      var response = await HttpService.uploadImage(base64, employeeId, _latlng,
-          _address, department, team, _timestamp, logType);
+      var response = await HttpService.uploadImage(
+        base64,
+        employeeId,
+        _latlng,
+        _address,
+        department,
+        team,
+        _selfieTimestamp,
+        logType,
+      );
       if (response.success) {
         success = true;
       } else {
@@ -252,7 +264,7 @@ class SelfiePageData with ChangeNotifier {
       _errorList.add(e.toString());
     } finally {
       // save to history
-      saveToHistory(
+      await saveToHistory(
           employeeId: employeeId,
           department: department,
           team: team,
@@ -268,6 +280,9 @@ class SelfiePageData with ChangeNotifier {
   Future<bool> uploadHistory(HistoryModel model) async {
     bool success = false;
     try {
+      final correctTime = await correctSelfieTime(model.selfieTimestamp);
+      final correctedSelfieTimestamp =
+          DateFormat('yyyy-MM-dd HH:mm:ss').format(correctTime);
       var response = await HttpService.uploadImage(
           model.image,
           model.employeeId,
@@ -275,14 +290,18 @@ class SelfiePageData with ChangeNotifier {
           model.address,
           model.department,
           model.team,
-          model.selfieTimestamp,
+          correctedSelfieTimestamp,
           model.logType);
       if (response.success) {
         success = true;
         // delete and add history if successfully uploaded
         model.delete();
         var box = Hive.box<HistoryModel>('history');
-        await box.add(model..uploaded = true);
+        await box.add(
+          model
+            ..uploaded = true
+            ..selfieTimestamp = correctedSelfieTimestamp,
+        );
       } else {
         _errorList.add(response.message);
       }
@@ -310,12 +329,45 @@ class SelfiePageData with ChangeNotifier {
           imageScreenshot: _imageScreenshot!,
           department: department,
           team: team,
-          selfieTimestamp: _timestamp,
+          selfieTimestamp: _selfieTimestamp,
           logType: logType,
           uploaded: uploaded));
     } catch (e) {
       debugPrint('$e');
       _errorList.add(e.toString());
     }
+  }
+
+  // fetch network time because device time not reliable
+  Future<DateTime> getNetworkTime() async {
+    DateTime nptTime = DateTime.now();
+    try {
+      nptTime = await NTP.now();
+      debugPrint('$nptTime');
+    } catch (e) {
+      debugPrint('$e');
+      _errorList.add(e.toString());
+    }
+    return nptTime;
+  }
+
+  // correct time by setting offset
+  Future<DateTime> correctSelfieTime(String timestamp) async {
+    DateTime selfieTimestamp =
+        DateFormat('yyyy-MM-dd HH:mm:ss').parse(timestamp);
+    DateTime networkTime = DateTime.now();
+    try {
+      final int offset = await NTP.getNtpOffset(localTime: networkTime);
+      networkTime = selfieTimestamp.add(Duration(milliseconds: offset));
+
+      debugPrint('Selfie time: $selfieTimestamp');
+      debugPrint('Network time: $networkTime');
+      debugPrint(
+          'Difference: ${selfieTimestamp.difference(networkTime).inMilliseconds}ms');
+    } catch (e) {
+      debugPrint('$e');
+      _errorList.add(e.toString());
+    }
+    return networkTime;
   }
 }

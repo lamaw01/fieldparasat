@@ -32,7 +32,7 @@ class _LoadingPageState extends State<LoadingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       backgroundColor: AppColor.kMainColor,
       body: Center(
         child: Card(
@@ -41,7 +41,7 @@ class _LoadingPageState extends State<LoadingPage> {
             width: 200.0,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: const [
+              children: [
                 Text('Loading...'),
                 CircularProgressIndicator(),
               ],
