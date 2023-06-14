@@ -5,16 +5,17 @@ import 'dart:convert';
 import '../model/selfie_model.dart';
 
 class HttpService {
-  static const String _serverUrl = 'http://uc-1.dnsalias.net:55083';
-  static Future<SelfieModel> uploadImage(
-      String image,
-      List<String> employeeId,
-      String latlng,
-      String address,
-      String department,
-      String team,
-      String selfieTimestamp,
-      String logType) async {
+  static const String _serverUrl = 'http://uc-1.dnsalias.net:55083/field_api';
+  static Future<SelfieModel> uploadImage({
+    required String image,
+    required List<String> employeeId,
+    required String latlng,
+    required String address,
+    required String department,
+    required String team,
+    required String selfieTimestamp,
+    required String logType,
+  }) async {
     var response = await http
         .post(Uri.parse('$_serverUrl/upload_image.php'),
             headers: <String, String>{
@@ -34,12 +35,16 @@ class HttpService {
             }))
         .timeout(const Duration(seconds: 10));
     debugPrint('insertLog ${response.statusCode} ${response.body}');
-    var result = selfieModelFromJson(response.body);
-    return result;
+    return selfieModelFromJson(response.body);
   }
 
-  static Future<void> insertDeviceLog(String id, String logTime, String address,
-      String latlng, String version) async {
+  static Future<void> insertDeviceLog({
+    required String id,
+    required String logTime,
+    required String address,
+    required String latlng,
+    required String version,
+  }) async {
     var response = await http
         .post(Uri.parse('$_serverUrl/insert_device_log.php'),
             headers: <String, String>{

@@ -87,51 +87,65 @@ class _SelfiePageState extends State<SelfiePage> {
             ],
           ),
           ValueListenableBuilder<Box<PresetModel>>(
-              valueListenable: box.listenable(),
-              builder: (ctx, box, child) {
-                PresetModel? last = box.get('last');
-                if (last == null) {
-                  return const SizedBox();
-                } else {
-                  return Container(
-                    color: AppColor.kMainColor,
-                    width: double.infinity,
-                    height: 90.0,
-                    child: TextButton.icon(
-                      onPressed: () async {
-                        await instance.getImage().then((result) async {
-                          if (result) {
-                            instance.uploading();
-                            await instance.captureImage();
-                            if (instance.tabController.index == 0) {
-                              instance.tabController.animateTo(1);
-                            }
-                            await instance.uploadImage(
-                              employeeId: last.employeeId,
-                              department: last.department,
-                              team: last.team,
-                              logType: instance.logIn ? 'IN' : 'OUT',
-                            );
-                            instance.uploading();
-                          }
-                        });
-                      },
-                      icon: const Icon(
-                        Icons.camera,
-                        color: Colors.white,
-                        size: 30.0,
-                      ),
-                      label: const Text(
-                        'Take Photo',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 24.0,
+            valueListenable: box.listenable(),
+            builder: (ctx, box, child) {
+              PresetModel? last = box.get('last');
+              if (last == null) {
+                return const SizedBox();
+              } else {
+                return Container(
+                  color: AppColor.kMainColor,
+                  width: size.width,
+                  height: 90.0,
+                  child: instance.gettingAddress
+                      ? const Center(
+                          child: SizedBox(
+                            width: 50.0,
+                            height: 50.0,
+                            child:
+                                CircularProgressIndicator(color: Colors.white),
+                          ),
+                        )
+                      : TextButton.icon(
+                          onPressed: () async {
+                            await instance.checkGalleryPermission();
+                            instance.changeGettingAdressState(true);
+                            await instance.getPosition();
+                            await instance.translateLatLng();
+                            instance.changeGettingAdressState(false);
+                            await instance.getImage().then((result) async {
+                              if (result) {
+                                instance.changeUploadingState(true);
+                                await instance.captureImage();
+                                if (instance.tabController.index == 0) {
+                                  instance.tabController.animateTo(1);
+                                }
+                                await instance.uploadImage(
+                                  employeeId: last.employeeId,
+                                  department: last.department,
+                                  team: last.team,
+                                );
+                                instance.changeUploadingState(false);
+                              }
+                            });
+                          },
+                          icon: const Icon(
+                            Icons.camera,
+                            color: Colors.white,
+                            size: 30.0,
+                          ),
+                          label: const Text(
+                            'Take Photo',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24.0,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                  );
-                }
-              }),
+                );
+              }
+            },
+          ),
         ],
       );
     } else {
