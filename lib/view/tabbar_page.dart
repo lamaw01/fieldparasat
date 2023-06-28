@@ -24,7 +24,7 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
         Provider.of<InternetConnectionChecker>(context, listen: false);
     instance.tabController = TabController(length: 2, vsync: this);
     internetChecker.onStatusChange.listen((status) async {
-      instance.internetStatus(status);
+      instance.internetStatus(status: status, context: context);
     });
   }
 

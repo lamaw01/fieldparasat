@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -23,6 +23,7 @@ class SelfiePageData with ChangeNotifier {
   final _picker = ImagePicker();
 
   Position? _position;
+
   XFile? _image;
   XFile? get image => _image;
 
@@ -53,6 +54,9 @@ class SelfiePageData with ChangeNotifier {
   var _isUploading = false;
   bool get isUploading => _isUploading;
 
+  var _hasVerifiedVersion = false;
+  bool get hasVerifiedVersion => _hasVerifiedVersion;
+
   final _errorList = <String>[];
   List<String> get errorList => _errorList;
 
@@ -68,6 +72,9 @@ class SelfiePageData with ChangeNotifier {
 
   var _appVersion = "";
   String get appVersion => _appVersion;
+
+  var _appVersionDatabase = "";
+  String get appVersionDatabase => _appVersionDatabase;
 
   var _deviceId = "";
   String get deviceId => _deviceId;
@@ -93,13 +100,22 @@ class SelfiePageData with ChangeNotifier {
   }
 
   // listens to internet status
-  void internetStatus(InternetConnectionStatus status) async {
+  void internetStatus({
+    required InternetConnectionStatus status,
+    required BuildContext context,
+  }) async {
     if (status == InternetConnectionStatus.connected) {
       _hasInternet.value = true;
     } else {
       _hasInternet.value = false;
     }
     debugPrint("hasInternet ${hasInternet.value}");
+    // check if gotten an app version in database
+    if (!_hasVerifiedVersion) {
+      await getAppVersion().then((_) {
+        showVersionAppDialog(context);
+      });
+    }
     var box = Hive.box<HistoryModel>('history');
     // if re-connected to internet check if theres failed upload then try to re-upload
     for (var history in box.values) {
@@ -150,27 +166,60 @@ class SelfiePageData with ChangeNotifier {
 
   // check location service
   Future<void> checkLocationService(BuildContext context) async {
-    await Geolocator.isLocationServiceEnabled().then((result) async {
-      if (!result) {
+    try {
+      await Geolocator.isLocationServiceEnabled().then((result) async {
+        if (!result) {
+          await showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Location service disabled'),
+                content: const Text(
+                    'Please enable the location service. After enabling press Continue.'),
+                actions: <Widget>[
+                  TextButton(
+                    child: const Text('Settings'),
+                    onPressed: () {
+                      Geolocator.openLocationSettings();
+                    },
+                  ),
+                  TextButton(
+                    child: const Text('Continue'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      });
+    } catch (e) {
+      debugPrint('checkLocationService $e');
+      _errorList.add('checkLocationService $e');
+    }
+  }
+
+  Future<void> showVersionAppDialog(BuildContext context) async {
+    var intAppVersion = _appVersion.replaceAll(".", "").trim();
+    var intAppVersionDatabase = _appVersionDatabase.replaceAll(".", "").trim();
+    try {
+      if (int.parse(intAppVersion) < int.parse(intAppVersionDatabase)) {
         await showDialog<void>(
           context: context,
           barrierDismissible: false,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Location service disabled'),
-              content: const Text(
-                  'Please enable the location service. After enabling press Continue.'),
+              title: const Text('App Out of date'),
+              content: Text(
+                  'Current version $_appVersion is out of date. Please update to version $_appVersionDatabase.'),
               actions: <Widget>[
                 TextButton(
-                  child: const Text('Settings'),
+                  child: const Text('Exit'),
                   onPressed: () {
-                    Geolocator.openLocationSettings();
-                  },
-                ),
-                TextButton(
-                  child: const Text('Continue'),
-                  onPressed: () {
-                    Navigator.of(context).pop();
+                    SystemNavigator.pop();
                   },
                 ),
               ],
@@ -178,16 +227,23 @@ class SelfiePageData with ChangeNotifier {
           },
         );
       }
-    });
+    } catch (e) {
+      debugPrint('showVersionAppDialog $e');
+      _errorList.add('showVersionAppDialog $e');
+    }
   }
 
   // initialize all functions
   Future<void> init() async {
-    await getPackageInfo();
     await getDeviceInfo();
     await getPosition();
     await translateLatLng();
     await insertDeviceLog();
+  }
+
+  Future<void> checkVersion() async {
+    await getPackageInfo();
+    await getAppVersion();
   }
 
   // get device version
@@ -200,6 +256,19 @@ class SelfiePageData with ChangeNotifier {
     } catch (e) {
       debugPrint('getPackageInfo $e');
       _errorList.add('getDeviceInfo $e');
+    }
+  }
+
+  // get app version in database
+  Future<void> getAppVersion() async {
+    try {
+      await HttpService.getAppVersion().then((result) {
+        _appVersionDatabase = result.orionVersion;
+        _hasVerifiedVersion = true;
+      });
+    } catch (e) {
+      debugPrint('getAppVersion $e');
+      _errorList.add('getAppVersion $e');
     }
   }
 

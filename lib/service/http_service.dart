@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../model/orion_version_model.dart';
 import '../model/selfie_model.dart';
 
 class HttpService {
@@ -61,5 +62,17 @@ class HttpService {
             }))
         .timeout(const Duration(seconds: 5));
     debugPrint('insertDeviceLog ${response.statusCode} ${response.body}');
+  }
+
+  static Future<OrionVersionModel> getAppVersion() async {
+    var response = await http.get(
+      Uri.parse('$_serverUrl/get_app_version.php'),
+      headers: <String, String>{
+        'Accept': '*/*',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    ).timeout(const Duration(seconds: 10));
+    debugPrint('getAppVersion ${response.body}');
+    return orionVersionModelFromJson(response.body);
   }
 }
