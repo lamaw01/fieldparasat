@@ -384,7 +384,7 @@ class SelfiePageData with ChangeNotifier {
         image: base64,
         employeeId: employeeId,
         latlng: _latlng,
-        address: _latlng,
+        address: _address,
         department: department,
         team: team,
         selfieTimestamp: _selfieTimestamp,
