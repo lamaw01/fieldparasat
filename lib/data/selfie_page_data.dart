@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:ntp/ntp.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../model/history_model.dart';
 import '../service/http_service.dart';
@@ -35,8 +37,10 @@ class SelfiePageData with ChangeNotifier {
 
   var _address = "error getting address";
   String get address => _address;
-  var _heading = "";
 
+  var _sixDigitCode = 000000;
+
+  var _heading = "";
   String get heading => _heading;
 
   var _altitude = "";
@@ -236,6 +240,7 @@ class SelfiePageData with ChangeNotifier {
   // initialize all functions
   Future<void> init() async {
     await getDeviceInfo();
+    await checkCode();
     await getPosition();
     await translateLatLng();
     await insertDeviceLog();
@@ -269,6 +274,39 @@ class SelfiePageData with ChangeNotifier {
     } catch (e) {
       debugPrint('getAppVersion $e');
       _errorList.add('getAppVersion $e');
+    }
+  }
+
+  // generate 6 digit code and store in sharedpref
+  Future<void> generateCode() async {
+    try {
+      var random = Random();
+      var generatedCode = random.nextInt(900000) + 100000;
+      _sixDigitCode = generatedCode;
+      debugPrint("$_sixDigitCode");
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('code', _sixDigitCode);
+      _deviceId = "$_deviceId:$_sixDigitCode";
+    } catch (e) {
+      debugPrint('$e');
+      _errorList.add('initDeviceInfo $e');
+    }
+  }
+
+  // check if device has generate code
+  Future<void> checkCode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final int? code = prefs.getInt('code');
+      if (code != null) {
+        _sixDigitCode = code;
+        _deviceId = "$_deviceId:$_sixDigitCode";
+      } else {
+        generateCode();
+      }
+    } catch (e) {
+      debugPrint('$e');
+      _errorList.add('initDeviceInfo $e');
     }
   }
 
@@ -351,6 +389,7 @@ class SelfiePageData with ChangeNotifier {
         team: team,
         selfieTimestamp: _selfieTimestamp,
         logType: _logIn ? 'IN' : 'OUT',
+        deviceId: _deviceId,
       );
       if (response.success) {
         success = true;
@@ -387,7 +426,8 @@ class SelfiePageData with ChangeNotifier {
         department: model.department,
         team: model.team,
         selfieTimestamp: correctSelfieTimestamp,
-        logType: _logIn ? 'IN' : 'OUT',
+        logType: model.logType,
+        deviceId: _deviceId,
       );
       if (response.success) {
         // delete and add history if successfully uploaded

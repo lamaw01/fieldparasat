@@ -6,7 +6,7 @@ import '../model/orion_version_model.dart';
 import '../model/selfie_model.dart';
 
 class HttpService {
-  static const String _serverUrl = 'http://uc-1.dnsalias.net:55083/field_api';
+  static const String _serverUrl = 'http://103.62.153.74:53000/field_api';
   static Future<SelfieModel> uploadImage({
     required String image,
     required List<String> employeeId,
@@ -16,6 +16,7 @@ class HttpService {
     required String team,
     required String selfieTimestamp,
     required String logType,
+    required String deviceId,
   }) async {
     var response = await http
         .post(Uri.parse('$_serverUrl/upload_image.php'),
@@ -32,10 +33,11 @@ class HttpService {
               'department': department,
               'team': team,
               'selfie_timestamp': selfieTimestamp,
-              'log_type': logType
+              'log_type': logType,
+              'device_id': deviceId
             }))
         .timeout(const Duration(seconds: 10));
-    debugPrint('insertLog ${response.statusCode} ${response.body}');
+    debugPrint('uploadImage ${response.statusCode} ${response.body}');
     return selfieModelFromJson(response.body);
   }
 
