@@ -26,6 +26,10 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
     internetChecker.onStatusChange.listen((status) async {
       instance.internetStatus(status: status, context: context);
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      instance.showHasLatLngNoAddressDialog(context);
+      instance.showErrorAddressDialog(context);
+    });
   }
 
   @override
@@ -52,7 +56,6 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
               ],
             ),
             title: GestureDetector(
-              // child: const Text('Parasat Selfie DTR'),
               child: ValueListenableBuilder<bool>(
                 valueListenable: instance.hasInternet,
                 builder: (ctx, value, child) {

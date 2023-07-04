@@ -34,6 +34,7 @@ class _SelfiePageState extends State<SelfiePage> {
     var instance = Provider.of<SelfiePageData>(context);
     var box = Hive.box<PresetModel>('previous');
     var size = MediaQuery.of(context).size;
+   
     if (instance.image == null && instance.imageScreenshot == null) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -109,10 +110,10 @@ class _SelfiePageState extends State<SelfiePage> {
                       : TextButton.icon(
                           onPressed: () async {
                             await instance.checkGalleryPermission();
-                            instance.changeGettingAdressState(true);
+                            instance.changeGettingAddressState(true);
                             await instance.getPosition();
                             await instance.translateLatLng();
-                            instance.changeGettingAdressState(false);
+                            instance.changeGettingAddressState(false);
                             await instance.getImage().then((result) async {
                               if (result) {
                                 instance.changeUploadingState(true);

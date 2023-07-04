@@ -98,7 +98,7 @@ class SelfiePageData with ChangeNotifier {
     notifyListeners();
   }
 
-  void changeGettingAdressState(bool state) {
+  void changeGettingAddressState(bool state) {
     _gettingAddress = state;
     notifyListeners();
   }
@@ -221,7 +221,7 @@ class SelfiePageData with ChangeNotifier {
                   'Current version $_appVersion is out of date. Please update to version $_appVersionDatabase.'),
               actions: <Widget>[
                 TextButton(
-                  child: const Text('Exit'),
+                  child: const Text('Exit app'),
                   onPressed: () {
                     SystemNavigator.pop();
                   },
@@ -237,13 +237,72 @@ class SelfiePageData with ChangeNotifier {
     }
   }
 
+  void showHasLatLngNoAddressDialog(BuildContext context) {
+    if (_latlng != "error getting latlng" &&
+        _address == "error getting address") {
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Has Coordinates Missing Address'),
+            content:
+                const Text('App has coordinates but doesnt have valid address'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Proceed'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              TextButton(
+                child: const Text('Exit app'),
+                onPressed: () {
+                  SystemNavigator.pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
+  void showErrorAddressDialog(BuildContext context) {
+    if (_latlng == "error getting latlng" &&
+        _address == "error getting address") {
+      showDialog<void>(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Error Getting Address'),
+            content: const Text(
+                'Please enable location service and/or enable internet access to get valid address and try initializing app again.'),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Exit app'),
+                onPressed: () {
+                  SystemNavigator.pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
+  }
+
   // initialize all functions
   Future<void> init() async {
     await getDeviceInfo();
     await checkCode();
     await getPosition();
     await translateLatLng();
-    await insertDeviceLog();
+    if (_latlng != "error getting latlng" &&
+        _address != "error getting address") {
+      await insertDeviceLog();
+    }
   }
 
   Future<void> checkVersion() async {
