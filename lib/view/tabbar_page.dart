@@ -3,7 +3,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 
 import '../data/selfie_page_data.dart';
-import '../widget.dart/app_dialogs.dart';
+import '../widget/app_dialogs.dart';
 import 'history_page.dart';
 import 'selfie_page.dart';
 import 'upload_page.dart';

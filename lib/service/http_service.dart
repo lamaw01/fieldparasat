@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import '../model/department_model.dart';
 import '../model/orion_version_model.dart';
 import '../model/selfie_model.dart';
 
@@ -76,5 +77,17 @@ class HttpService {
     ).timeout(const Duration(seconds: 10));
     debugPrint('getAppVersion ${response.body}');
     return orionVersionModelFromJson(response.body);
+  }
+
+  static Future<List<DepartmentModel>> getDepartment() async {
+    var response = await http.get(
+      Uri.parse('$_serverUrl/get_department.php'),
+      headers: <String, String>{
+        'Accept': '*/*',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    ).timeout(const Duration(seconds: 10));
+    debugPrint('getDepartment ${response.body}');
+    return departmentModelFromJson(response.body);
   }
 }

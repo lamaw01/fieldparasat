@@ -17,6 +17,7 @@ import 'package:screenshot/screenshot.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../model/department_model.dart';
 import '../model/history_model.dart';
 import '../service/http_service.dart';
 import '../service/position_service.dart';
@@ -63,6 +64,8 @@ class SelfiePageData with ChangeNotifier {
 
   final _errorList = <String>[];
   List<String> get errorList => _errorList;
+
+  // List<DepartmentModel> get departmentList => _departmentList;
 
   //Create an instance of ScreenshotController
   final screenshotController = ScreenshotController();
@@ -590,5 +593,15 @@ class SelfiePageData with ChangeNotifier {
       _errorList.add(e.toString());
     }
     return networkTime;
+  }
+
+  Future<List<DepartmentModel>> getDepartment() async {
+    var list = <DepartmentModel>[];
+    try {
+      list = await HttpService.getDepartment();
+    } catch (e) {
+      debugPrint('$e');
+    }
+    return list;
   }
 }

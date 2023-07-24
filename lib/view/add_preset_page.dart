@@ -3,7 +3,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../app_color.dart';
 import '../model/preset_model.dart';
-import '../widget.dart/app_dialogs.dart';
+import '../widget/app_dialogs.dart';
 
 class AddPresetPage extends StatefulWidget {
   const AddPresetPage({super.key});
