@@ -297,7 +297,7 @@ class SelfiePageData with ChangeNotifier {
   }
 
   // initialize all functions
-  Future<void> init() async {
+  Future<String> init() async {
     await getDeviceInfo();
     await checkCode();
     await getPosition();
@@ -306,6 +306,7 @@ class SelfiePageData with ChangeNotifier {
         _address != "error getting address") {
       await insertDeviceLog();
     }
+    return _address;
   }
 
   Future<void> checkVersion() async {

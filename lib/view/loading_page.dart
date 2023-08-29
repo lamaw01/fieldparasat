@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../app_color.dart';
 import '../data/selfie_page_data.dart';
+import 'no_address_page.dart';
 import 'tabbar_page.dart';
 
 class LoadingPage extends StatefulWidget {
@@ -24,13 +25,22 @@ class _LoadingPageState extends State<LoadingPage> {
         await context.read<SelfiePageData>().checkLocationService(context);
       }
       if (context.mounted) {
-        await context.read<SelfiePageData>().init().then((_) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (BuildContext context) => const TabBarPage(),
-            ),
-          );
+        await context.read<SelfiePageData>().init().then((result) {
+          if (result != 'error getting address') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (BuildContext context) => const TabBarPage(),
+              ),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (BuildContext context) => const NoAddressPage(),
+              ),
+            );
+          }
         });
       }
     });
