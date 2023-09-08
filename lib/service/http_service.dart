@@ -8,6 +8,9 @@ import '../model/selfie_model.dart';
 
 class HttpService {
   static const String _serverUrl = 'http://103.62.153.74:53000/field_api';
+  static const String appDownloadLink =
+      'http://103.62.153.74:53000/download/orion.apk';
+
   static Future<SelfieModel> uploadImage({
     required String image,
     required List<String> employeeId,

@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'dart:math';
+import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:image/image.dart' as img;
 
 import '../model/department_model.dart';
 import '../model/history_model.dart';
@@ -27,8 +30,8 @@ class SelfiePageData with ChangeNotifier {
 
   Position? _position;
 
-  XFile? _image;
-  XFile? get image => _image;
+  File? _image;
+  File? get image => _image;
 
   Uint8List? _imageScreenshot;
   Uint8List? get imageScreenshot => _imageScreenshot;
@@ -64,8 +67,6 @@ class SelfiePageData with ChangeNotifier {
 
   final _errorList = <String>[];
   List<String> get errorList => _errorList;
-
-  // List<DepartmentModel> get departmentList => _departmentList;
 
   //Create an instance of ScreenshotController
   final screenshotController = ScreenshotController();
@@ -136,12 +137,22 @@ class SelfiePageData with ChangeNotifier {
   Future<bool> getImage() async {
     var hasImage = false;
     try {
-      var result = await _picker.pickImage(
+      XFile? result = await _picker.pickImage(
           source: ImageSource.camera,
           imageQuality: 70,
           preferredCameraDevice: CameraDevice.front);
       if (result != null) {
-        _image = result;
+        var imgByte = await result.readAsBytes();
+        final img.Image? capturedImage = img.decodeImage(imgByte);
+        var decodedImage = await decodeImageFromList(imgByte);
+        bool isLandscapeImage = decodedImage.width > decodedImage.height;
+        if (isLandscapeImage) {
+          final imgRotate = img.copyRotate(capturedImage!, angle: 90);
+          _image =
+              await File(result.path).writeAsBytes(img.encodeJpg(imgRotate));
+        } else {
+          _image = File(result.path);
+        }
         hasImage = true;
         notifyListeners();
       }
@@ -223,6 +234,14 @@ class SelfiePageData with ChangeNotifier {
               content: Text(
                   'Current version $_appVersion is out of date. Please update to version $_appVersionDatabase.'),
               actions: <Widget>[
+                TextButton(
+                  child: const Text('Download new version'),
+                  onPressed: () {
+                    launchUrl(
+                      Uri.parse(HttpService.appDownloadLink),
+                    );
+                  },
+                ),
                 TextButton(
                   child: const Text('Exit app'),
                   onPressed: () {
@@ -343,7 +362,7 @@ class SelfiePageData with ChangeNotifier {
   // generate 6 digit code and store in sharedpref
   Future<void> generateCode() async {
     try {
-      var random = Random();
+      var random = math.Random();
       var generatedCode = random.nextInt(900000) + 100000;
       _sixDigitCode = generatedCode;
       debugPrint("$_sixDigitCode");
