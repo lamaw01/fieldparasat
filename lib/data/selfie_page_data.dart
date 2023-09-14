@@ -469,6 +469,8 @@ class SelfiePageData with ChangeNotifier {
         selfieTimestamp: _selfieTimestamp,
         logType: _logIn ? 'IN' : 'OUT',
         deviceId: _deviceId,
+        app: 'orion',
+        version: _appVersion,
       );
       if (response.success) {
         success = true;
@@ -507,6 +509,8 @@ class SelfiePageData with ChangeNotifier {
         selfieTimestamp: correctSelfieTimestamp,
         logType: model.logType,
         deviceId: _deviceId,
+        app: 'orion',
+        version: _appVersion,
       );
       if (response.success) {
         // delete and add history if successfully uploaded

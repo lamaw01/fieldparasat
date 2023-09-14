@@ -21,6 +21,8 @@ class HttpService {
     required String selfieTimestamp,
     required String logType,
     required String deviceId,
+    required String app,
+    required String version,
   }) async {
     var response = await http
         .post(Uri.parse('$_serverUrl/upload_image.php'),
@@ -38,7 +40,9 @@ class HttpService {
               'team': team,
               'selfie_timestamp': selfieTimestamp,
               'log_type': logType,
-              'device_id': deviceId
+              'device_id': deviceId,
+              'app': app,
+              'version': version
             }))
         .timeout(const Duration(seconds: 10));
     debugPrint('uploadImage ${response.statusCode} ${response.body}');
@@ -64,7 +68,7 @@ class HttpService {
               "address": address,
               "latlng": latlng,
               "version": version,
-              "app_name": 'Orion'
+              "app_name": 'orion'
             }))
         .timeout(const Duration(seconds: 5));
     debugPrint('insertDeviceLog ${response.statusCode} ${response.body}');
