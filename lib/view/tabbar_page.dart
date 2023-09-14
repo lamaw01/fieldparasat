@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 
@@ -26,9 +27,12 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
     internetChecker.onStatusChange.listen((status) async {
       instance.internetStatus(status: status, context: context);
     });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       instance.showHasLatLngNoAddressDialog(context);
       instance.showErrorAddressDialog(context);
+      var logBox = await Hive.openBox('logBox');
+      bool? lastLog = logBox.get('lastLog');
+      instance.changeLogType(lastLog ?? true);
     });
   }
 

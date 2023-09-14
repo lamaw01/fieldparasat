@@ -321,10 +321,7 @@ class SelfiePageData with ChangeNotifier {
     await checkCode();
     await getPosition();
     await translateLatLng();
-    if (_latlng != "error getting latlng" &&
-        _address != "error getting address") {
-      await insertDeviceLog();
-    }
+    await insertDeviceLog();
     return _address;
   }
 
@@ -350,7 +347,7 @@ class SelfiePageData with ChangeNotifier {
   Future<void> getAppVersion() async {
     try {
       await HttpService.getAppVersion().then((result) {
-        _appVersionDatabase = result.orionVersion;
+        _appVersionDatabase = result.version;
         _hasVerifiedVersion = true;
       });
     } catch (e) {
@@ -549,6 +546,9 @@ class SelfiePageData with ChangeNotifier {
           selfieTimestamp: _selfieTimestamp,
           logType: _logIn ? 'IN' : 'OUT',
           uploaded: uploaded));
+      var logBox = await Hive.openBox('logBox');
+      logBox.put('lastLog', !_logIn);
+      _logIn = !_logIn;
     } catch (e) {
       debugPrint('saveToHistory $e');
       _errorList.add(e.toString());

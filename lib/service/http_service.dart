@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 import '../model/department_model.dart';
-import '../model/orion_version_model.dart';
+import '../model/version_model.dart';
 import '../model/selfie_model.dart';
 
 class HttpService {
@@ -70,7 +70,7 @@ class HttpService {
     debugPrint('insertDeviceLog ${response.statusCode} ${response.body}');
   }
 
-  static Future<OrionVersionModel> getAppVersion() async {
+  static Future<VersionModel> getAppVersion() async {
     var response = await http.get(
       Uri.parse('$_serverUrl/get_app_version.php'),
       headers: <String, String>{
@@ -79,7 +79,7 @@ class HttpService {
       },
     ).timeout(const Duration(seconds: 10));
     debugPrint('getAppVersion ${response.body}');
-    return orionVersionModelFromJson(response.body);
+    return versionModelFromJson(response.body);
   }
 
   static Future<List<DepartmentModel>> getDepartment() async {
