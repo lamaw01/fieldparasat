@@ -18,10 +18,12 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && array_key_exists('image', $input)){
     $selfie_timestamp = $input['selfie_timestamp'];
     $log_type = $input['log_type'];
     $device_id = $input['device_id'];
+    $app = $input['app'];
+    $version = $input['version'];
 
     // query insert image
-    $sql_insert_image = 'INSERT INTO tbl_logs(employee_id, latlng, address, image, is_selfie, department, team, selfie_timestamp, log_type, device_id)
-    VALUES (:employee_id,:latlng,:address,:image,:is_selfie,:department,:team,:selfie_timestamp,:log_type,:device_id)';
+    $sql_insert_image = 'INSERT INTO tbl_logs(employee_id, latlng, address, image, is_selfie, department, team, selfie_timestamp, log_type, device_id, app, version)
+    VALUES (:employee_id,:latlng,:address,:image,:is_selfie,:department,:team,:selfie_timestamp,:log_type,:device_id,:app,:version)';
     try {
         // loop array of id
         foreach ($employee_id as $id) {
@@ -36,6 +38,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && array_key_exists('image', $input)){
             $insert_image->bindParam(':selfie_timestamp', $selfie_timestamp, PDO::PARAM_STR);
             $insert_image->bindParam(':log_type', $log_type, PDO::PARAM_STR);
             $insert_image->bindParam(':device_id', $device_id, PDO::PARAM_STR);
+            $insert_image->bindParam(':app', $app, PDO::PARAM_STR);
+            $insert_image->bindParam(':version', $version, PDO::PARAM_STR);
             $insert_image->execute();
         }
         echo json_encode(array('success'=>true,'message'=>'Ok'));

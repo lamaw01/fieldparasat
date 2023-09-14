@@ -6,25 +6,24 @@ header('Content-Type: application/json; charset=utf-8');
 $inputJSON = file_get_contents('php://input');
 $input = json_decode($inputJSON, TRUE);
 
-// if not put device_id die
+// if not put id die
 if($_SERVER['REQUEST_METHOD'] == 'GET'){
 
-    // query check if device is authorized
-    $sql_get_app_version = 'SELECT * FROM tbl_app_version
-    WHERE id = 2';
+    $sql_get_department = "SELECT department_id, department_name FROM tbl_department;";
 
     try {
-        $get_app_version= $conn->prepare($sql_get_app_version);
-        $get_app_version->execute();
-        $result_get_app_version = $get_app_version->fetch(PDO::FETCH_ASSOC);
-        echo json_encode($result_get_app_version);
+        $get_department= $conn->prepare($sql_get_department);
+        $get_department->execute();
+        $result_get_department = $get_department->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($result_get_department);
     } catch (PDOException $e) {
         echo json_encode(array('success'=>false,'message'=>$e->getMessage()));
     } finally{
         // Closing the connection.
         $conn = null;
     }
-}else{
+}
+else{
     echo json_encode(array('success'=>false,'message'=>'Error input'));
     die();
 }
