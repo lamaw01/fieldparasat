@@ -59,9 +59,6 @@ class SelfiePageData with ChangeNotifier {
   var _dateTimeDisplay = "";
   String get dateTimeDisplay => _dateTimeDisplay;
 
-  var _isUploading = false;
-  bool get isUploading => _isUploading;
-
   var _hasVerifiedVersion = false;
   bool get hasVerifiedVersion => _hasVerifiedVersion;
 
@@ -92,14 +89,23 @@ class SelfiePageData with ChangeNotifier {
 
   final _dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
 
+  final _isUploading = ValueNotifier(false);
+  ValueNotifier<bool> get isUploading => _isUploading;
+
+  final _allowTouch = ValueNotifier(false);
+  ValueNotifier<bool> get allowTouch => _allowTouch;
+
   void changeLogType(bool state) {
     _logIn = state;
     notifyListeners();
   }
 
   void changeUploadingState(bool state) {
-    _isUploading = state;
-    notifyListeners();
+    _isUploading.value = state;
+  }
+
+  void changeAllowTouchState(bool state) {
+    _allowTouch.value = state;
   }
 
   void changeGettingAddressState(bool state) {
@@ -124,13 +130,13 @@ class SelfiePageData with ChangeNotifier {
         showVersionAppDialog(context);
       });
     }
-    var box = Hive.box<HistoryModel>('history');
+    // var box = Hive.box<HistoryModel>('history');
     // if re-connected to internet check if theres failed upload then try to re-upload
-    for (var history in box.values) {
-      if (!history.uploaded) {
-        uploadHistory(model: history);
-      }
-    }
+    // for (var history in box.values) {
+    //   if (!history.uploaded) {
+    //     uploadHistory(model: history);
+    //   }
+    // }
   }
 
   // get image
@@ -138,9 +144,12 @@ class SelfiePageData with ChangeNotifier {
     var hasImage = false;
     try {
       XFile? result = await _picker.pickImage(
-          source: ImageSource.camera,
-          imageQuality: 70,
-          preferredCameraDevice: CameraDevice.front);
+        source: ImageSource.camera,
+        imageQuality: 50,
+        preferredCameraDevice: CameraDevice.front,
+        maxHeight: 720,
+        maxWidth: 1280,
+      );
       if (result != null) {
         var imgByte = await result.readAsBytes();
         final img.Image? capturedImage = img.decodeImage(imgByte);
@@ -154,7 +163,6 @@ class SelfiePageData with ChangeNotifier {
           _image = File(result.path);
         }
         hasImage = true;
-        notifyListeners();
       }
     } catch (e) {
       debugPrint('getImage $e');
@@ -162,6 +170,7 @@ class SelfiePageData with ChangeNotifier {
       var networkTime = await getNetworkTime();
       _selfieTimestamp = _dateFormat.format(networkTime);
       _dateTimeDisplay = DateFormat.yMEd().add_jms().format(networkTime);
+      notifyListeners();
     }
     return hasImage;
   }
@@ -450,7 +459,7 @@ class SelfiePageData with ChangeNotifier {
     }
   }
 
-  Future<void> uploadImage({
+  Future<bool> uploadImage({
     required List<String> employeeId,
     required String department,
     required String team,
@@ -492,9 +501,11 @@ class SelfiePageData with ChangeNotifier {
       _imageScreenshot = null;
       notifyListeners();
     }
+    return success;
   }
 
-  Future<void> uploadHistory({required HistoryModel model}) async {
+  Future<bool> uploadHistory({required HistoryModel model}) async {
+    var success = false;
     try {
       final correctTime =
           await correctSelfieTime(timestamp: model.selfieTimestamp);
@@ -513,6 +524,7 @@ class SelfiePageData with ChangeNotifier {
         version: _appVersion,
       );
       if (response.success) {
+        success = true;
         // delete and add history if successfully uploaded
         model.delete();
         var box = Hive.box<HistoryModel>('history');
@@ -523,11 +535,14 @@ class SelfiePageData with ChangeNotifier {
         );
       } else {
         _errorList.add(response.message);
+        success = false;
       }
     } catch (e) {
       debugPrint('uploadHistory $e');
       _errorList.add(e.toString());
+      success = false;
     }
+    return success;
   }
 
   Future<void> saveToHistory({

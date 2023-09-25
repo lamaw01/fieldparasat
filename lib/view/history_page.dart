@@ -4,14 +4,14 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../model/history_model.dart';
 import 'history_detail_page.dart';
 
-class SavesPage extends StatefulWidget {
-  const SavesPage({super.key});
+class HistoryPage extends StatefulWidget {
+  const HistoryPage({super.key});
 
   @override
-  State<SavesPage> createState() => _SavesPageState();
+  State<HistoryPage> createState() => _HistoryPageState();
 }
 
-class _SavesPageState extends State<SavesPage> {
+class _HistoryPageState extends State<HistoryPage> {
   Future<bool?> showDialogDeleteCache() async {
     return showDialog<bool>(
       context: context,

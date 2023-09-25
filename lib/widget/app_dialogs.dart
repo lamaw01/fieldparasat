@@ -38,7 +38,7 @@ class AppDialogs {
       reverseAnimation: StyledToastAnimation.fade,
       position: StyledToastPosition.center,
       animDuration: const Duration(seconds: 1),
-      duration: const Duration(seconds: 5),
+      duration: const Duration(seconds: 4),
       curve: Curves.elasticOut,
       reverseCurve: Curves.linear,
     );

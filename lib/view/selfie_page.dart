@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:screenshot/screenshot.dart';
@@ -8,6 +9,7 @@ import 'package:screenshot/screenshot.dart';
 import '../app_color.dart';
 import '../data/selfie_page_data.dart';
 import '../model/preset_model.dart';
+import '../widget/app_dialogs.dart';
 
 class SelfiePage extends StatefulWidget {
   const SelfiePage({super.key});
@@ -34,7 +36,7 @@ class _SelfiePageState extends State<SelfiePage> {
     var instance = Provider.of<SelfiePageData>(context);
     var box = Hive.box<PresetModel>('previous');
     var size = MediaQuery.of(context).size;
-   
+
     if (instance.image == null && instance.imageScreenshot == null) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -114,19 +116,32 @@ class _SelfiePageState extends State<SelfiePage> {
                             await instance.getPosition();
                             await instance.translateLatLng();
                             instance.changeGettingAddressState(false);
+                            instance.changeAllowTouchState(true);
                             await instance.getImage().then((result) async {
                               if (result) {
-                                instance.changeUploadingState(true);
                                 await instance.captureImage();
-                                if (instance.tabController.index == 0) {
-                                  instance.tabController.animateTo(1);
-                                }
-                                await instance.uploadImage(
-                                  employeeId: last.employeeId,
-                                  department: last.department,
-                                  team: last.team,
-                                );
-                                instance.changeUploadingState(false);
+                                instance.changeUploadingState(true);
+                                await Future.delayed(
+                                    const Duration(seconds: 1));
+                                await instance
+                                    .uploadImage(
+                                        employeeId: last.employeeId,
+                                        department: last.department,
+                                        team: last.team)
+                                    .then((result) async {
+                                  instance.changeUploadingState(false);
+                                  // if (instance.tabController.index == 0) {
+                                  //   instance.tabController.animateTo(1);
+                                  // }
+                                  if (result) {
+                                    AppDialogs.showMyToast(
+                                        'Success selfie log uploaded', context);
+                                  } else {
+                                    AppDialogs.showMyToast(
+                                        'Error uploading selfie log', context);
+                                  }
+                                  instance.changeAllowTouchState(false);
+                                });
                               }
                             });
                           },
@@ -215,6 +230,36 @@ class _SelfiePageState extends State<SelfiePage> {
                   ),
                 ],
               ),
+            ),
+            ValueListenableBuilder<bool>(
+              valueListenable: instance.isUploading,
+              builder: (context, value, child) {
+                if (value) {
+                  return const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Uploading..',
+                        textAlign: TextAlign.center,
+                        maxLines: 4,
+                        style: TextStyle(
+                          fontSize: 30.0,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      SizedBox(width: 2.5),
+                      SpinKitFadingCircle(
+                        color: Colors.white,
+                        size: 75.0,
+                      ),
+                    ],
+                  );
+                }
+                return child!;
+              },
+              child: const SizedBox(),
             ),
           ],
         ),

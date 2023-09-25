@@ -41,7 +41,7 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
     var instance = Provider.of<SelfiePageData>(context);
 
     return AbsorbPointer(
-      absorbing: instance.isUploading,
+      absorbing: instance.allowTouch.value,
       child: DefaultTabController(
         length: 2,
         child: Scaffold(
@@ -123,7 +123,7 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
             controller: instance.tabController,
             children: const [
               SelfiePage(),
-              SavesPage(),
+              HistoryPage(),
             ],
           ),
         ),
