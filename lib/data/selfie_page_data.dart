@@ -246,9 +246,8 @@ class SelfiePageData with ChangeNotifier {
                 TextButton(
                   child: const Text('Download new version'),
                   onPressed: () {
-                    launchUrl(
-                      Uri.parse(HttpService.appDownloadLink),
-                    );
+                    launchUrl(Uri.parse(HttpService.appDownloadLink),
+                        mode: LaunchMode.externalApplication);
                   },
                 ),
                 TextButton(
