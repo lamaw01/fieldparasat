@@ -44,7 +44,7 @@ class HttpService {
               'app': app,
               'version': version
             }))
-        .timeout(const Duration(seconds: 10));
+        .timeout(const Duration(seconds: 60));
     debugPrint('uploadImage ${response.statusCode} ${response.body}');
     return selfieModelFromJson(response.body);
   }
@@ -70,7 +70,7 @@ class HttpService {
               "version": version,
               "app_name": 'orion'
             }))
-        .timeout(const Duration(seconds: 5));
+        .timeout(const Duration(seconds: 10));
     debugPrint('insertDeviceLog ${response.statusCode} ${response.body}');
   }
 

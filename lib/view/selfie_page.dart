@@ -116,7 +116,7 @@ class _SelfiePageState extends State<SelfiePage> {
                             await instance.getPosition();
                             await instance.translateLatLng();
                             instance.changeGettingAddressState(false);
-                            instance.changeAllowTouchState(true);
+                            instance.disableTouch(true);
                             await instance.getImage().then((result) async {
                               if (result) {
                                 await instance.captureImage();
@@ -140,10 +140,10 @@ class _SelfiePageState extends State<SelfiePage> {
                                     AppDialogs.showMyToast(
                                         'Error uploading selfie log', context);
                                   }
-                                  instance.changeAllowTouchState(false);
                                 });
                               }
                             });
+                            instance.disableTouch(false);
                           },
                           icon: const Icon(
                             Icons.camera,

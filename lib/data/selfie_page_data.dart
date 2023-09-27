@@ -104,7 +104,7 @@ class SelfiePageData with ChangeNotifier {
     _isUploading.value = state;
   }
 
-  void changeAllowTouchState(bool state) {
+  void disableTouch(bool state) {
     _allowTouch.value = state;
   }
 

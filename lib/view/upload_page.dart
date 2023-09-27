@@ -23,7 +23,7 @@ class _UploadPageState extends State<UploadPage> {
   bool logType = true;
 
   var departmentList = <DepartmentModel>[];
-  var dropdownValue2 = 'Select';
+  var dropdownValue2 = '--Select--';
   var departmentList2 = <String>[];
 
   @override
