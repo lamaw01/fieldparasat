@@ -127,36 +127,31 @@ class HistoryDetailPage extends StatelessWidget {
             ),
             Consumer<SelfiePageData>(
               builder: (context, provider, child) {
-                return ValueListenableBuilder<bool>(
-                  valueListenable: provider.isUploading,
-                  builder: (context, value, child) {
-                    if (value) {
-                      return const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            'Uploading..',
-                            textAlign: TextAlign.center,
-                            maxLines: 4,
-                            style: TextStyle(
-                              fontSize: 30.0,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          SizedBox(width: 2.5),
-                          SpinKitFadingCircle(
-                            color: Colors.white,
-                            size: 75.0,
-                          ),
-                        ],
-                      );
-                    }
-                    return child!;
-                  },
-                  child: const SizedBox(),
-                );
+                if (provider.isUploading) {
+                  return const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Uploading..',
+                        textAlign: TextAlign.center,
+                        maxLines: 4,
+                        style: TextStyle(
+                          fontSize: 30.0,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      SizedBox(width: 2.5),
+                      SpinKitFadingCircle(
+                        color: Colors.white,
+                        size: 75.0,
+                      ),
+                    ],
+                  );
+                } else {
+                  return const SizedBox();
+                }
               },
             ),
           ],

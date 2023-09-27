@@ -272,52 +272,47 @@ class _UploadPageState extends State<UploadPage> {
               //   keyboardType: TextInputType.text,
               //   textInputAction: TextInputAction.done,
               // ),
-              Consumer<SelfiePageData>(
-                builder: (context, provider, child) {
-                  return Row(
-                    mainAxisSize: MainAxisSize.max,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Department: ',
-                        style: TextStyle(fontSize: 20),
+              Row(
+                mainAxisSize: MainAxisSize.max,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Department: ',
+                    style: TextStyle(fontSize: 20),
+                  ),
+                  Container(
+                    width: 200.0,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5),
+                      border: Border.all(
+                        color: Colors.blue,
+                        style: BorderStyle.solid,
+                        width: 1.0,
                       ),
-                      Container(
-                        width: 200.0,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(5),
-                          border: Border.all(
-                            color: Colors.blue,
-                            style: BorderStyle.solid,
-                            width: 1.0,
-                          ),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 10.0),
-                            borderRadius: BorderRadius.circular(5),
-                            value: dropdownValue2,
-                            onChanged: (value) async {
-                              if (value != null) {
-                                setState(() {
-                                  dropdownValue2 = value;
-                                });
-                              }
-                            },
-                            items: departmentList2
-                                .map<DropdownMenuItem<String>>((value) {
-                              return DropdownMenuItem<String>(
-                                value: value,
-                                child: Text(value),
-                              );
-                            }).toList(),
-                          ),
-                        ),
+                    ),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                        borderRadius: BorderRadius.circular(5),
+                        value: dropdownValue2,
+                        onChanged: (value) async {
+                          if (value != null) {
+                            setState(() {
+                              dropdownValue2 = value;
+                            });
+                          }
+                        },
+                        items: departmentList2
+                            .map<DropdownMenuItem<String>>((value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
                       ),
-                    ],
-                  );
-                },
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 10.0),
               TextField(

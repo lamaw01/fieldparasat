@@ -38,96 +38,98 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    var instance = Provider.of<SelfiePageData>(context);
-
-    return AbsorbPointer(
-      absorbing: instance.allowTouch.value,
-      child: DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          appBar: AppBar(
-            bottom: TabBar(
-              controller: instance.tabController,
-              indicatorColor: Colors.white,
-              labelStyle: const TextStyle(fontSize: 20.0),
-              tabs: const [
-                Tab(
-                  text: 'Home',
-                ),
-                Tab(
-                  text: 'History',
-                ),
-              ],
-            ),
-            title: GestureDetector(
-              child: ValueListenableBuilder<bool>(
-                valueListenable: instance.hasInternet,
-                builder: (ctx, value, child) {
-                  if (value) {
-                    return const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text('Online'),
-                        Icon(
-                          Icons.signal_wifi_statusbar_4_bar,
-                          color: Colors.green,
-                        ),
-                      ],
-                    );
-                  } else {
-                    return const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Text('Offline'),
-                        Icon(
-                          Icons.signal_wifi_off,
-                          color: Colors.red,
-                        ),
-                      ],
-                    );
-                  }
-                },
-              ),
-              onDoubleTap: () {
-                AppDialogs.showErrorLogsDialog(instance.errorList, context);
-              },
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.info),
-                iconSize: 30.0,
-                onPressed: () {
-                  AppDialogs.showAppVersionDialog(
-                      'Orion ${instance.appVersion}',
-                      'Device id: ${instance.deviceId}',
-                      context);
-                },
-              ),
-              IconButton(
-                iconSize: 30.0,
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (BuildContext context) => const UploadPage(),
+    return Consumer<SelfiePageData>(
+      builder: ((context, provider, child) {
+        return AbsorbPointer(
+          absorbing: provider.allowTouch,
+          child: DefaultTabController(
+            length: 2,
+            child: Scaffold(
+              appBar: AppBar(
+                bottom: TabBar(
+                  controller: provider.tabController,
+                  indicatorColor: Colors.white,
+                  labelStyle: const TextStyle(fontSize: 20.0),
+                  tabs: const [
+                    Tab(
+                      text: 'Home',
                     ),
-                  );
-                },
-                icon: const Icon(Icons.person),
+                    Tab(
+                      text: 'History',
+                    ),
+                  ],
+                ),
+                title: GestureDetector(
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: provider.hasInternet,
+                    builder: (ctx, value, child) {
+                      if (value) {
+                        return const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text('Online'),
+                            Icon(
+                              Icons.signal_wifi_statusbar_4_bar,
+                              color: Colors.green,
+                            ),
+                          ],
+                        );
+                      } else {
+                        return const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                          children: [
+                            Text('Offline'),
+                            Icon(
+                              Icons.signal_wifi_off,
+                              color: Colors.red,
+                            ),
+                          ],
+                        );
+                      }
+                    },
+                  ),
+                  onDoubleTap: () {
+                    AppDialogs.showErrorLogsDialog(provider.errorList, context);
+                  },
+                ),
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.info),
+                    iconSize: 30.0,
+                    onPressed: () {
+                      AppDialogs.showAppVersionDialog(
+                          'Orion ${provider.appVersion}',
+                          'Device id: ${provider.deviceId}',
+                          context);
+                    },
+                  ),
+                  IconButton(
+                    iconSize: 30.0,
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (BuildContext context) => const UploadPage(),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.person),
+                  ),
+                ],
               ),
-            ],
+              body: TabBarView(
+                controller: provider.tabController,
+                children: const [
+                  SelfiePage(),
+                  HistoryPage(),
+                ],
+              ),
+            ),
           ),
-          body: TabBarView(
-            controller: instance.tabController,
-            children: const [
-              SelfiePage(),
-              HistoryPage(),
-            ],
-          ),
-        ),
-      ),
+        );
+      }),
     );
   }
 }

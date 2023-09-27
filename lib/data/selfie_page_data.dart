@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 import 'dart:math' as math;
 
@@ -89,11 +90,11 @@ class SelfiePageData with ChangeNotifier {
 
   final _dateFormat = DateFormat('yyyy-MM-dd HH:mm:ss');
 
-  final _isUploading = ValueNotifier(false);
-  ValueNotifier<bool> get isUploading => _isUploading;
+  var _isUploading = false;
+  bool get isUploading => _isUploading;
 
-  final _allowTouch = ValueNotifier(false);
-  ValueNotifier<bool> get allowTouch => _allowTouch;
+  var _allowTouch = false;
+  bool get allowTouch => _allowTouch;
 
   void changeLogType(bool state) {
     _logIn = state;
@@ -101,11 +102,14 @@ class SelfiePageData with ChangeNotifier {
   }
 
   void changeUploadingState(bool state) {
-    _isUploading.value = state;
+    _isUploading = state;
+    notifyListeners();
   }
 
   void disableTouch(bool state) {
-    _allowTouch.value = state;
+    _allowTouch = state;
+    notifyListeners();
+    log('allowTouch $_allowTouch');
   }
 
   void changeGettingAddressState(bool state) {
