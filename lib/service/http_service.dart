@@ -44,7 +44,7 @@ class HttpService {
               'app': app,
               'version': version
             }))
-        .timeout(const Duration(seconds: 60));
+        .timeout(const Duration(seconds: 20));
     debugPrint('uploadImage ${response.statusCode} ${response.body}');
     return selfieModelFromJson(response.body);
   }
