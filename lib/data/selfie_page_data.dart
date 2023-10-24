@@ -25,6 +25,7 @@ import '../model/department_model.dart';
 import '../model/history_model.dart';
 import '../service/http_service.dart';
 import '../service/position_service.dart';
+import '../view/selfie_page.dart';
 
 class SelfiePageData with ChangeNotifier {
   final _picker = ImagePicker();
@@ -149,7 +150,7 @@ class SelfiePageData with ChangeNotifier {
     try {
       XFile? result = await _picker.pickImage(
         source: ImageSource.camera,
-        imageQuality: 50,
+        imageQuality: 100,
         preferredCameraDevice: CameraDevice.front,
         maxHeight: 720,
         maxWidth: 1280,
@@ -250,7 +251,7 @@ class SelfiePageData with ChangeNotifier {
                 TextButton(
                   child: const Text('Download new version'),
                   onPressed: () {
-                    launchUrl(Uri.parse(HttpService.appDownloadLink),
+                    launchUrl(Uri.parse(HttpService.downloadLink),
                         mode: LaunchMode.externalApplication);
                   },
                 ),
@@ -493,6 +494,7 @@ class SelfiePageData with ChangeNotifier {
       debugPrint('uploadImage $e');
       _errorList.add(e.toString());
     } finally {
+      // await Future.delayed(const Duration(minutes: 15));
       // save to history
       await saveToHistory(
         employeeId: employeeId,
@@ -502,6 +504,8 @@ class SelfiePageData with ChangeNotifier {
       );
       _image = null;
       _imageScreenshot = null;
+      sentProgress.value = 0.0;
+      totalProgress.value = 0.0;
       notifyListeners();
     }
     return success;

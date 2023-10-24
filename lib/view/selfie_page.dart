@@ -238,25 +238,74 @@ class _SelfiePageState extends State<SelfiePage> {
                   ),
                 ),
                 if (instance.isUploading) ...[
-                  const Row(
+                  Column(
                     mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        'Uploading..',
-                        textAlign: TextAlign.center,
-                        maxLines: 4,
-                        style: TextStyle(
-                          fontSize: 30.0,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Uploading...',
+                            textAlign: TextAlign.center,
+                            maxLines: 4,
+                            style: TextStyle(
+                              fontSize: 30.0,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          SizedBox(width: 5),
+                          SpinKitFadingCircle(
+                            color: Colors.white,
+                            size: 50.0,
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 2.5),
-                      SpinKitFadingCircle(
-                        color: Colors.white,
-                        size: 75.0,
-                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ValueListenableBuilder<double>(
+                            valueListenable: sentProgress,
+                            builder: (context, value, widget) {
+                              return SizedBox(
+                                width: 125.0,
+                                child: Text(
+                                  'Sent: $value KB',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 18.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 3.0),
+                          ValueListenableBuilder<double>(
+                            valueListenable: totalProgress,
+                            builder: (context, value, widget) {
+                              return SizedBox(
+                                width: 125.0,
+                                child: Text(
+                                  'Total: $value KB',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 18.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      )
                     ],
                   ),
                 ],
@@ -268,3 +317,6 @@ class _SelfiePageState extends State<SelfiePage> {
     );
   }
 }
+
+final ValueNotifier<double> sentProgress = ValueNotifier<double>(0);
+final ValueNotifier<double> totalProgress = ValueNotifier<double>(0);

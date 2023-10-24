@@ -5,6 +5,7 @@ import 'package:orion/widget/app_dialogs.dart';
 import 'package:provider/provider.dart';
 
 import '../data/selfie_page_data.dart';
+import 'selfie_page.dart';
 
 class HistoryDetailPage extends StatelessWidget {
   const HistoryDetailPage({super.key, required this.model});
@@ -128,25 +129,74 @@ class HistoryDetailPage extends StatelessWidget {
             Consumer<SelfiePageData>(
               builder: (context, provider, child) {
                 if (provider.isUploading) {
-                  return const Row(
+                  return Column(
                     mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        'Uploading..',
-                        textAlign: TextAlign.center,
-                        maxLines: 4,
-                        style: TextStyle(
-                          fontSize: 30.0,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                      const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Uploading...',
+                            textAlign: TextAlign.center,
+                            maxLines: 4,
+                            style: TextStyle(
+                              fontSize: 30.0,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          SizedBox(width: 5),
+                          SpinKitFadingCircle(
+                            color: Colors.white,
+                            size: 50.0,
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 2.5),
-                      SpinKitFadingCircle(
-                        color: Colors.white,
-                        size: 75.0,
-                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ValueListenableBuilder<double>(
+                            valueListenable: sentProgress,
+                            builder: (context, value, widget) {
+                              return SizedBox(
+                                width: 125.0,
+                                child: Text(
+                                  'Sent: $value KB',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 18.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                          const SizedBox(width: 3.0),
+                          ValueListenableBuilder<double>(
+                            valueListenable: totalProgress,
+                            builder: (context, value, widget) {
+                              return SizedBox(
+                                width: 125.0,
+                                child: Text(
+                                  'Total: $value KB',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 18.0,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      )
                     ],
                   );
                 } else {

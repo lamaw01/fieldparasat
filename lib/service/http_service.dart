@@ -1,15 +1,30 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'dart:developer';
+
+import 'package:dio/dio.dart';
 import 'dart:convert';
 
 import '../model/department_model.dart';
 import '../model/version_model.dart';
 import '../model/selfie_model.dart';
+import '../view/selfie_page.dart';
 
 class HttpService {
-  static const String _serverUrl = 'http://103.62.153.74:53000/field_api';
-  static const String appDownloadLink =
+  static const String _serverUrl = 'http://103.62.153.74:53000';
+  static const String downloadLink =
       'http://103.62.153.74:53000/download/orion.apk';
+
+  static final _dio = Dio(
+    BaseOptions(
+      baseUrl: '$_serverUrl/field_api',
+      // connectTimeout: const Duration(seconds: 60),
+      // receiveTimeout: const Duration(seconds: 60),
+      // sendTimeout: const Duration(seconds: 60),
+      headers: <String, String>{
+        'Accept': '*/*',
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+    ),
+  );
 
   static Future<SelfieModel> uploadImage({
     required String image,
@@ -24,29 +39,33 @@ class HttpService {
     required String app,
     required String version,
   }) async {
-    var response = await http
-        .post(Uri.parse('$_serverUrl/upload_image.php'),
-            headers: <String, String>{
-              'Accept': '*/*',
-              'Content-Type': 'application/json; charset=UTF-8',
-            },
-            body: json.encode(<String, dynamic>{
-              'image': image,
-              'employee_id': employeeId,
-              'latlng': latlng,
-              'address': address,
-              'is_selfie': true,
-              'department': department,
-              'team': team,
-              'selfie_timestamp': selfieTimestamp,
-              'log_type': logType,
-              'device_id': deviceId,
-              'app': app,
-              'version': version
-            }))
-        .timeout(const Duration(seconds: 20));
-    debugPrint('uploadImage ${response.statusCode} ${response.body}');
-    return selfieModelFromJson(response.body);
+    Response<Map<String, dynamic>> response = await _dio.post(
+      '/upload_image.php',
+      data: {
+        'image': image,
+        'employee_id': employeeId,
+        'latlng': latlng,
+        'address': address,
+        'is_selfie': true,
+        'department': department,
+        'team': team,
+        'selfie_timestamp': selfieTimestamp,
+        'log_type': logType,
+        'device_id': deviceId,
+        'app': app,
+        'version': version
+      },
+      onSendProgress: (int sent, int total) {
+        double kbSent = sent / 1024;
+        double kbTotal = total / 1024;
+        log('$sent $total');
+        log('$kbSent $kbTotal');
+        sentProgress.value = kbSent.roundToDouble();
+        totalProgress.value = kbTotal.roundToDouble();
+      },
+    );
+    log('${json.encode(response.data)} uploadImage2');
+    return selfieModelFromJson(json.encode(response.data));
   }
 
   static Future<void> insertDeviceLog({
@@ -56,45 +75,45 @@ class HttpService {
     required String latlng,
     required String version,
   }) async {
-    var response = await http
-        .post(Uri.parse('$_serverUrl/insert_device_log.php'),
-            headers: <String, String>{
-              'Accept': '*/*',
-              'Content-Type': 'application/json; charset=UTF-8',
-            },
-            body: json.encode(<String, dynamic>{
-              "device_id": id,
-              "log_time": logTime,
-              "address": address,
-              "latlng": latlng,
-              "version": version,
-              "app_name": 'orion'
-            }))
-        .timeout(const Duration(seconds: 10));
-    debugPrint('insertDeviceLog ${response.statusCode} ${response.body}');
+    Response<Map<String, dynamic>> response = await _dio.post(
+      '/insert_device_log.php',
+      data: {
+        "device_id": id,
+        "log_time": logTime,
+        "address": address,
+        "latlng": latlng,
+        "version": version,
+        "app_name": 'orion'
+      },
+      options: Options(
+        sendTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+      ),
+    );
+    log('${json.encode(response.data)} insertDeviceLog2');
   }
 
   static Future<VersionModel> getAppVersion() async {
-    var response = await http.get(
-      Uri.parse('$_serverUrl/get_app_version.php'),
-      headers: <String, String>{
-        'Accept': '*/*',
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-    ).timeout(const Duration(seconds: 10));
-    debugPrint('getAppVersion ${response.body}');
-    return versionModelFromJson(response.body);
+    Response<Map<String, dynamic>> response = await _dio.get(
+      '/get_app_version.php',
+      options: Options(
+        sendTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+      ),
+    );
+    log('${json.encode(response.data)} getAppVersion2');
+    return versionModelFromJson(json.encode(response.data));
   }
 
   static Future<List<DepartmentModel>> getDepartment() async {
-    var response = await http.get(
-      Uri.parse('$_serverUrl/get_department.php'),
-      headers: <String, String>{
-        'Accept': '*/*',
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-    ).timeout(const Duration(seconds: 10));
-    debugPrint('getDepartment ${response.body}');
-    return departmentModelFromJson(response.body);
+    Response<Map<String, dynamic>> response = await _dio.get(
+      '/get_department.php',
+      options: Options(
+        sendTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 10),
+      ),
+    );
+    log('${json.encode(response.data)} getDepartment2');
+    return departmentModelFromJson(json.encode(response.data));
   }
 }
