@@ -8,7 +8,7 @@ part of 'history_model.dart';
 
 class HistoryModelAdapter extends TypeAdapter<HistoryModel> {
   @override
-  final int typeId = 2;
+  final int typeId = 4;
 
   @override
   HistoryModel read(BinaryReader reader) {
@@ -27,13 +27,15 @@ class HistoryModelAdapter extends TypeAdapter<HistoryModel> {
       logType: fields[7] as String,
       uploaded: fields[8] as bool,
       team: fields[9] as String,
+      fileUint8List: fields[10] as Uint8List,
+      fileServerName: fields[11] as String,
     );
   }
 
   @override
   void write(BinaryWriter writer, HistoryModel obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.image)
       ..writeByte(1)
@@ -53,7 +55,11 @@ class HistoryModelAdapter extends TypeAdapter<HistoryModel> {
       ..writeByte(8)
       ..write(obj.uploaded)
       ..writeByte(9)
-      ..write(obj.team);
+      ..write(obj.team)
+      ..writeByte(10)
+      ..write(obj.fileUint8List)
+      ..writeByte(11)
+      ..write(obj.fileServerName);
   }
 
   @override

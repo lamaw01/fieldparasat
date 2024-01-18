@@ -1,3 +1,5 @@
+// ignore_for_file: unused_import
+
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
@@ -14,11 +16,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:intl/intl.dart';
 import 'package:ntp/ntp.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image/image.dart' as img;
 
 import '../model/department_model.dart';
@@ -57,6 +62,9 @@ class SelfiePageData with ChangeNotifier {
 
   var _selfieTimestamp = "";
   String get selfieTimestamp => _selfieTimestamp;
+
+  var _fileServername = "";
+  String get fileServername => _fileServername;
 
   var _dateTimeDisplay = "";
   String get dateTimeDisplay => _dateTimeDisplay;
@@ -150,7 +158,7 @@ class SelfiePageData with ChangeNotifier {
     try {
       XFile? result = await _picker.pickImage(
         source: ImageSource.camera,
-        imageQuality: 100,
+        imageQuality: 80,
         preferredCameraDevice: CameraDevice.front,
         maxHeight: 720,
         maxWidth: 1280,
@@ -174,6 +182,7 @@ class SelfiePageData with ChangeNotifier {
     } finally {
       var networkTime = await getNetworkTime();
       _selfieTimestamp = _dateFormat.format(networkTime);
+      _fileServername = DateFormat('yyyyMMddHHmmss').format(networkTime);
       _dateTimeDisplay = DateFormat.yMEd().add_jms().format(networkTime);
       notifyListeners();
     }
@@ -470,10 +479,9 @@ class SelfiePageData with ChangeNotifier {
   }) async {
     var success = false;
     try {
-      var base64 = base64Encode(_imageScreenshot!);
-      debugPrint(base64);
+      // var base64 = base64Encode(_imageScreenshot!);
+      final String filename = "$_fileServername.jpg";
       var response = await HttpService.uploadImage(
-        image: base64,
         employeeId: employeeId,
         latlng: _latlng,
         address: _address,
@@ -484,17 +492,20 @@ class SelfiePageData with ChangeNotifier {
         deviceId: _deviceId,
         app: 'orion',
         version: _appVersion,
+        imagePath: filename,
       );
+
       if (response.success) {
         success = true;
       } else {
         _errorList.add(response.message);
       }
+      // upload screenshot image to server
+      await uploadImageToServer(employeeId, _imageScreenshot!, filename);
     } catch (e) {
       debugPrint('uploadImage $e');
       _errorList.add(e.toString());
     } finally {
-      // await Future.delayed(const Duration(minutes: 15));
       // save to history
       await saveToHistory(
         employeeId: employeeId,
@@ -517,8 +528,8 @@ class SelfiePageData with ChangeNotifier {
       final correctTime =
           await correctSelfieTime(timestamp: model.selfieTimestamp);
       final correctSelfieTimestamp = _dateFormat.format(correctTime);
+      final String filename = "$_fileServername.jpg";
       var response = await HttpService.uploadImage(
-        image: model.image,
         employeeId: model.employeeId,
         latlng: model.latlng,
         address: model.address,
@@ -529,6 +540,7 @@ class SelfiePageData with ChangeNotifier {
         deviceId: _deviceId,
         app: 'orion',
         version: _appVersion,
+        imagePath: filename,
       );
       if (response.success) {
         success = true;
@@ -544,6 +556,9 @@ class SelfiePageData with ChangeNotifier {
         _errorList.add(response.message);
         success = false;
       }
+      // upload offline screenshot image to server
+      await uploadImageToServerOffline(
+          model.employeeId, model.fileUint8List, model.fileServerName);
     } catch (e) {
       debugPrint('uploadHistory $e');
       _errorList.add(e.toString());
@@ -560,28 +575,32 @@ class SelfiePageData with ChangeNotifier {
   }) async {
     try {
       var box = Hive.box<HistoryModel>('history');
-      var base64 = base64Encode(_imageScreenshot!);
+      final compressedImageScreenshot =
+          await compressAndGetFile(_imageScreenshot!);
+      var base64 = base64Encode(compressedImageScreenshot);
+      final String filename = "$_fileServername.jpg";
       await box.add(HistoryModel(
-          image: base64,
-          employeeId: employeeId,
-          latlng: latlng,
-          address: address,
-          imageScreenshot: _imageScreenshot!,
-          department: department,
-          team: team,
-          selfieTimestamp: _selfieTimestamp,
-          logType: _logIn ? 'IN' : 'OUT',
-          uploaded: uploaded));
+        image: base64,
+        employeeId: employeeId,
+        latlng: latlng,
+        address: address,
+        imageScreenshot: _imageScreenshot!,
+        department: department,
+        team: team,
+        selfieTimestamp: _selfieTimestamp,
+        logType: _logIn ? 'IN' : 'OUT',
+        uploaded: uploaded,
+        fileUint8List: compressedImageScreenshot,
+        fileServerName: filename,
+      ));
       var logBox = await Hive.openBox('logBox');
       logBox.put('lastLog', !_logIn);
       _logIn = !_logIn;
+      await saveImageToGallery(filename, compressedImageScreenshot);
     } catch (e) {
       debugPrint('saveToHistory $e');
       _errorList.add(e.toString());
-    } finally {
-      var logType = _logIn ? 'IN' : 'OUT';
-      await saveImageToGallery(fileName: "$logType $_selfieTimestamp");
-    }
+    } finally {}
   }
 
   Future<void> checkGalleryPermission() async {
@@ -597,13 +616,13 @@ class SelfiePageData with ChangeNotifier {
     }
   }
 
-  Future<void> saveImageToGallery({required String fileName}) async {
+  Future<void> saveImageToGallery(String fileName, Uint8List uint8list) async {
     try {
       final result = await ImageGallerySaver.saveImage(
-        _imageScreenshot!,
+        uint8list,
         name: fileName,
       );
-      debugPrint(result.toString());
+      log(result.toString());
     } catch (e) {
       debugPrint('saveImageToGallery $e');
       _errorList.add(e.toString());
@@ -615,7 +634,7 @@ class SelfiePageData with ChangeNotifier {
     var nptTime = DateTime.now();
     try {
       nptTime = await NTP.now();
-      debugPrint('Network time: $nptTime');
+      log('Network time: $nptTime');
     } catch (e) {
       debugPrint('getNetworkTime $e');
       _errorList.add(e.toString());
@@ -646,8 +665,68 @@ class SelfiePageData with ChangeNotifier {
     try {
       list = await HttpService.getDepartment();
     } catch (e) {
-      debugPrint('$e');
+      debugPrint('$e getDepartment');
     }
+    DateTime.now();
     return list;
+  }
+
+  Future<Uint8List> compressAndGetFile(Uint8List uint8list) async {
+    var result = await FlutterImageCompress.compressWithList(
+      uint8list,
+      quality: 50,
+      minHeight: 720,
+      minWidth: 1280,
+    );
+    return result;
+  }
+
+  Future<void> uploadImageToServer(List<String> employeeId, Uint8List uint8list,
+      String fileServerName) async {
+    try {
+      final compressedImageScreenshot = await compressAndGetFile(uint8list);
+
+      // final String filename = "$_fileServername.jpg";
+
+      final futurefileScreenshot =
+          File(_image!.path).writeAsBytes(compressedImageScreenshot);
+
+      late File fileScreenshot;
+      await futurefileScreenshot.then((value) {
+        fileScreenshot = value;
+      });
+
+      // final eta =  File.fromRawPath(compressedImageScreenshot);
+
+      await HttpService.uploadFileImage(
+          imageName: fileServerName,
+          imagePath: fileScreenshot.path,
+          employeeId: employeeId);
+    } catch (e) {
+      debugPrint('$e uploadImageToServer');
+    }
+  }
+
+  Future<void> uploadImageToServerOffline(List<String> employeeId,
+      Uint8List uint8list, String fileServerName) async {
+    try {
+      // final compressedImageScreenshot = File.fromRawPath(uint8list);
+
+      // late File fileFromUint8list;
+      // await File(fileServerName).writeAsBytes(uint8list).then((value) {
+      //   fileFromUint8list = value;
+      // });
+
+      final tempDir = await getTemporaryDirectory();
+      File file = await File('${tempDir.path}/$fileServerName').create();
+      file.writeAsBytesSync(uint8list);
+
+      await HttpService.uploadFileImage(
+          imageName: fileServerName,
+          imagePath: file.path,
+          employeeId: employeeId);
+    } catch (e) {
+      debugPrint('$e uploadImageToServer');
+    }
   }
 }

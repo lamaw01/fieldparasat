@@ -3,7 +3,7 @@ import 'package:hive/hive.dart';
 
 part 'history_model.g.dart';
 
-@HiveType(typeId: 2)
+@HiveType(typeId: 4)
 class HistoryModel extends HiveObject {
   HistoryModel({
     required this.image,
@@ -16,6 +16,8 @@ class HistoryModel extends HiveObject {
     required this.logType,
     required this.uploaded,
     required this.team,
+    required this.fileUint8List,
+    required this.fileServerName,
   });
 
   @HiveField(0)
@@ -47,4 +49,10 @@ class HistoryModel extends HiveObject {
 
   @HiveField(9)
   String team;
+
+  @HiveField(10)
+  Uint8List fileUint8List;
+
+  @HiveField(11)
+  String fileServerName;
 }

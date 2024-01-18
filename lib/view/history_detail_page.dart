@@ -69,7 +69,7 @@ class HistoryDetailPage extends StatelessWidget {
                       ),
                       for (var id in model.employeeId) ...[
                         Text(
-                          '$id, ',
+                          '$id ',
                           style: style,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,

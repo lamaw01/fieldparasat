@@ -43,6 +43,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Orion',
       theme: ThemeData(
+        useMaterial3: false,
         primarySwatch: AppColor.kMainColor,
       ),
       home: const LoadingPage(),
