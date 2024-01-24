@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:dio/dio.dart';
+import 'package:intl/intl.dart';
 import 'dart:convert';
 
 import '../model/department_model.dart';
@@ -19,9 +20,6 @@ class HttpService {
   static final _dio = Dio(
     BaseOptions(
       baseUrl: '$_serverUrl/field_api',
-      // connectTimeout: const Duration(seconds: 60),
-      // receiveTimeout: const Duration(seconds: 60),
-      // sendTimeout: const Duration(seconds: 60),
       headers: <String, String>{
         'Accept': '*/*',
         'Content-Type': 'application/json; charset=UTF-8',
@@ -42,6 +40,8 @@ class HttpService {
     required String version,
     required String imagePath,
   }) async {
+    final day = DateFormat('EEEE').format(DateTime.now()).toLowerCase();
+
     final response = await _dio.post(
       '/upload_image.php',
       data: {
@@ -57,13 +57,11 @@ class HttpService {
         'app': app,
         'version': version,
         'image_path': imagePath,
+        'day': day,
       },
-      // data: formData,
       onSendProgress: (int sent, int total) {
         double kbSent = sent / 1024;
         double kbTotal = total / 1024;
-        // log('$sent $total');
-        // log('$kbSent $kbTotal');
         sentProgress.value = kbSent.roundToDouble();
         totalProgress.value = kbTotal.roundToDouble();
       },
