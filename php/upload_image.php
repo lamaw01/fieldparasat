@@ -20,16 +20,22 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && array_key_exists('employee_id', $inpu
     $app = $input['app'];
     $version = $input['version'];
     $image_path = $input['image_path'];
-    $foldername = "images/";    
+    
+    $folder = "images/";
+
+    $year = date("Y");
+    $month = date("m");
+    $day = date("d");
+
+    $day_folder = $folder . $year . '/' . $month . '/' . $day;
 
     // query insert image
     $sql_insert_image = 'INSERT INTO tbl_logs(employee_id, latlng, address, is_selfie, department, team, selfie_timestamp, log_type, device_id, app, version, image_path)
     VALUES (:employee_id,:latlng,:address,:is_selfie,:department,:team,:selfie_timestamp,:log_type,:device_id,:app,:version,:image_path)';
     try {
+        $path_file = $day_folder . '/' . $image_path;
         // loop array of id
         foreach ($employee_id as $id) {
-            $path_file = $foldername . $id . '/' . $image_path;
-
             $insert_image = $conn->prepare($sql_insert_image);
             $insert_image->bindParam(':employee_id', $id, PDO::PARAM_STR);
             $insert_image->bindParam(':latlng', $latlng, PDO::PARAM_STR);
