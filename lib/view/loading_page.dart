@@ -28,7 +28,7 @@ class _LoadingPageState extends State<LoadingPage> {
       }
       if (context.mounted) {
         await context.read<SelfiePageData>().init().then((result) {
-          if (result != 'error getting address') {
+          if (result != 'error getting latlng') {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(

@@ -4,6 +4,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:provider/provider.dart';
 
 import '../data/selfie_page_data.dart';
+// import '../model/latlng.dart';
 import '../widget/app_dialogs.dart';
 import 'history_page.dart';
 import 'selfie_page.dart';
@@ -29,10 +30,20 @@ class _TabBarPageState extends State<TabBarPage> with TickerProviderStateMixin {
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       instance.showHasLatLngNoAddressDialog(context);
-      instance.showErrorAddressDialog(context);
+      // instance.showErrorAddressDialog(context);
       var logBox = await Hive.openBox('logBox');
       bool? lastLog = logBox.get('lastLog');
       instance.changeLogType(lastLog ?? true);
+      // bool isInArea = instance.checkArea(
+      //   // LatLng(8.398795010522031, 124.59675687553661),
+      //   instance.latLngCurrent!,
+      //   LatLng(8.481100173763172, 124.64984742206732),
+      //   13.0,
+      // );
+      // if (!isInArea) {
+      //   // ignore: use_build_context_synchronously
+      //   AppDialogs.showAreaNotInRange(instance.latLngCurrent!, context);
+      // }
     });
   }
 

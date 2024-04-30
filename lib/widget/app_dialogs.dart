@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_styled_toast/flutter_styled_toast.dart';
 
 import '../app_color.dart';
+import '../model/latlng.dart';
 
 class AppDialogs {
   static void showMyToast(String message, BuildContext context) {
@@ -66,6 +68,30 @@ class AppDialogs {
               child: const Text('Ok'),
               onPressed: () {
                 Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  static void showAreaNotInRange(LatLng latlng, BuildContext context) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Out of range'),
+          content: SizedBox(
+            child: Text(
+                'Your Coordinates ${latlng.lat} ${latlng.lng} is not in range.'),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Exit'),
+              onPressed: () {
+                SystemNavigator.pop();
               },
             ),
           ],

@@ -28,6 +28,7 @@ import 'package:image/image.dart' as img;
 
 import '../model/department_model.dart';
 import '../model/history_model.dart';
+import '../model/latlng.dart';
 import '../service/http_service.dart';
 import '../service/position_service.dart';
 import '../view/selfie_page.dart';
@@ -35,10 +36,16 @@ import '../view/selfie_page.dart';
 class SelfiePageData with ChangeNotifier {
   final _picker = ImagePicker();
 
-  Position? _position;
+  // Position? _position;
 
   File? _image;
   File? get image => _image;
+
+  double _lat = 0.0;
+  double _lng = 0.0;
+
+  // LatLng? _latLngCurrent;
+  // LatLng? get latLngCurrent => _latLngCurrent;
 
   Uint8List? _imageScreenshot;
   Uint8List? get imageScreenshot => _imageScreenshot;
@@ -282,6 +289,7 @@ class SelfiePageData with ChangeNotifier {
   }
 
   void showHasLatLngNoAddressDialog(BuildContext context) {
+    //_latlng != "error getting latlng" && _address == "error getting address"
     if (_latlng != "error getting latlng" &&
         _address == "error getting address") {
       showDialog<void>(
@@ -312,30 +320,30 @@ class SelfiePageData with ChangeNotifier {
     }
   }
 
-  void showErrorAddressDialog(BuildContext context) {
-    if (_latlng == "error getting latlng" &&
-        _address == "error getting address") {
-      showDialog<void>(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Error Getting Address'),
-            content: const Text(
-                'Please enable location service and/or enable internet access to get valid address and try initializing app again.'),
-            actions: <Widget>[
-              TextButton(
-                child: const Text('Exit app'),
-                onPressed: () {
-                  SystemNavigator.pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
-  }
+  // void showErrorAddressDialog(BuildContext context) {
+  //   //latlng != "error getting latlng" && _address == "error getting address"
+  //   if (_latlng == "error getting latlng") {
+  //     showDialog<void>(
+  //       context: context,
+  //       barrierDismissible: false,
+  //       builder: (BuildContext context) {
+  //         return AlertDialog(
+  //           title: const Text('Error Getting Address'),
+  //           content: const Text(
+  //               'Please enable location service and/or enable internet access to get valid address and try initializing app again.'),
+  //           actions: <Widget>[
+  //             TextButton(
+  //               child: const Text('Exit app'),
+  //               onPressed: () {
+  //                 SystemNavigator.pop();
+  //               },
+  //             ),
+  //           ],
+  //         );
+  //       },
+  //     );
+  //   }
+  // }
 
   // initialize all functions
   Future<String> init() async {
@@ -344,7 +352,9 @@ class SelfiePageData with ChangeNotifier {
     await getPosition();
     await translateLatLng();
     await insertDeviceLog();
-    return _address;
+    // return _address;
+    log('address $_address latlng $_latlng');
+    return _latlng;
   }
 
   Future<void> checkVersion() async {
@@ -428,8 +438,11 @@ class SelfiePageData with ChangeNotifier {
   Future<void> getPosition() async {
     try {
       await PositionService.getPosition().then((result) {
-        _position = result;
+        // _position = result;
         _latlng = "${result.latitude} ${result.longitude}";
+        _lat = result.latitude;
+        _lng = result.longitude;
+        // _latLngCurrent = LatLng(result.latitude, result.longitude);
         _speed = result.speed.toString();
         _heading = result.heading.toString();
         _altitude = result.altitude.toStringAsFixed(2);
@@ -444,12 +457,13 @@ class SelfiePageData with ChangeNotifier {
   // translate latlng to address
   Future<void> translateLatLng() async {
     try {
-      await placemarkFromCoordinates(_position!.latitude, _position!.longitude)
-          .then((result) {
-        _address =
-            "${result.first.subAdministrativeArea} ${result.first.locality} ${result.first.thoroughfare} ${result.first.street}";
-      });
-      debugPrint(_address);
+      if (_lat != 0.0 && _lng != 0.0) {
+        await placemarkFromCoordinates(_lat, _lng).then((result) {
+          _address =
+              "${result.first.subAdministrativeArea} ${result.first.locality} ${result.first.thoroughfare} ${result.first.street}";
+        });
+      }
+      // debugPrint(_address);
     } catch (e) {
       debugPrint('translateLatLng $e');
       _errorList.add('initTranslateLatLng $e');
@@ -728,5 +742,13 @@ class SelfiePageData with ChangeNotifier {
     } catch (e) {
       debugPrint('$e uploadImageToServer');
     }
+  }
+
+  bool checkArea(LatLng checkPoint, LatLng centerPoint, double km) {
+    var ky = 40000 / 360.0;
+    var kx = math.cos(math.pi * centerPoint.lat / 180.0) * ky;
+    var dx = (centerPoint.lng - checkPoint.lng).abs() * kx;
+    var dy = (centerPoint.lat - checkPoint.lat).abs() * ky;
+    return math.sqrt(dx * dx + dy * dy) <= km;
   }
 }

@@ -14,7 +14,11 @@ class PositionService {
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
+
     return await Geolocator.getCurrentPosition(
-        timeLimit: const Duration(seconds: 10));
+      desiredAccuracy: LocationAccuracy.medium,
+      forceAndroidLocationManager: false,
+      timeLimit: const Duration(seconds: 20),
+    );
   }
 }
